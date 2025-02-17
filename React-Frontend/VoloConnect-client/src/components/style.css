@@ -1,0 +1,222 @@
+body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    font-family: 'Jost', sans-serif;
+	    overflow: hidden;
+	background-image: url("https://i.pinimg.com/originals/78/5b/52/785b5279a5f56c5f0d00b1799a7fb865.gif");
+}
+
+.main {
+    width: 350px;
+    height: 500px;
+    overflow: hidden;
+    background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+    border-radius: 10px;
+    box-shadow: 5px 20px 50px #000;
+    /* animation: fadeIn 1s ease-in-out; */
+	animation: upDown 2s infinite ease-in-out; /* Smooth up-down animation */
+
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+#chk {
+    display: none;
+}
+
+.signup {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    transition: transform 0.8s ease-in-out;
+}
+
+label {
+    color: #fff;
+    font-size: 2.3em;
+    justify-content: center;
+    display: flex;
+    margin: 50px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: transform 0.5s ease-in-out, color 0.5s ease-in-out;
+    animation: slideIn 1s ease-in-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+input {
+    width: 60%;
+    height: 10px;
+    background: #e0dede;
+    justify-content: center;
+    display: flex;
+    margin: 20px auto;
+    padding: 12px;
+    border: none;
+    outline: none;
+    border-radius: 5px;
+    transition: background 0.3s ease-in-out, transform 0.3s ease-in-out;
+    color: black; /* Set text color to black */
+}
+
+input:focus {
+    background: #fff;
+    transform: scale(1.05);
+}
+
+button {
+    width: 60%;
+    height: 40px;
+    margin: 10px auto;
+    justify-content: center;
+    display: block;
+    color: #fff;
+    background: #573b8a;
+    font-size: 1em;
+    font-weight: bold;
+    margin-top: 30px;
+    outline: none;
+    border: none;
+    border-radius: 5px;
+    transition: background 0.2s ease-in, transform 0.2s ease-in;
+    cursor: pointer;
+    animation: fadeIn 1s ease-in-out;
+}
+
+button:hover {
+    background: #6d44b8;
+    transform: scale(1.05);
+}
+
+.login {
+    height: 460px;
+    background: #eee;
+    border-radius: 60% / 10%;
+    transform: translateY(-180px);
+    transition: transform 0.8s ease-in-out, border-radius 0.8s ease-in-out;
+}
+
+.login label {
+    color: #573b8a;
+    transform: scale(0.6);
+    transition: transform 0.5s ease-in-out, color 0.5s ease-in-out;
+}
+
+#chk:checked ~ .login {
+    transform: translateY(-500px);
+    border-radius: 10px;
+}
+
+#chk:checked ~ .login label {
+    transform: scale(1);
+}
+
+#chk:checked ~ .signup label {
+    transform: scale(0.6);
+}
+h2 {
+    font-size: 2.5em; /* Large, bold text */
+    text-align: center;
+    margin-top: 20px;
+    margin-bottom: 10px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    display: inline-block; /* Required for animation */
+    animation: upDown 2s infinite ease-in-out; /* Smooth up-down animation */
+
+    /* Gradient text color matching the theme */
+    background: linear-gradient(45deg, #ff9a9e, #e5c1ff, #c7b3ff, #a6c1ee, #ffffff);
+    -webkit-background-clip: text; /* Clip gradient inside text */
+    background-clip: text;
+    color: transparent; /* Make the text color transparent to show the gradient */
+}
+
+/* Smooth up-down animation */
+@keyframes upDown {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-8px); } /* Moves text up */
+    100% { transform: translateY(0px); } /* Moves text back down */
+}
+
+
+
+@media screen and (max-width: 768px) {
+    h2 {
+        font-size: 2em;
+        letter-spacing: 1px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    h2 {
+        font-size: 1.8em;
+        letter-spacing: 0.5px;
+    }
+}
+/* Responsive Design */
+@media (max-width: 600px) {
+    .main {
+        width: 90%;
+        height: auto;
+        padding: 20px;
+    }
+
+    label {
+        font-size: 2em;
+        margin: 30px;
+    }
+
+    input, button {
+        width: 80%;
+    }
+
+    .login {
+        height: 400px;
+    }
+
+    #chk:checked ~ .login {
+        transform: translateY(-450px);
+    }
+}
+
+@media (max-width: 400px) {
+    label {
+        font-size: 1.8em;
+        margin: 20px;
+    }
+
+    input, button {
+        width: 90%;
+    }
+
+    .login {
+        height: 350px;
+    }
+
+    #chk:checked ~ .login {
+        transform: translateY(-400px);
+    }
+}
