@@ -1,12 +1,16 @@
-// src/App.js
-import React from "react";
-import Auth from "./components/Auth.jsx"; // ✅ Ensure correct case and extension
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Auth from "./components/Login/Auth";
+import Landingpage from "./components/Landing Page/Landing-page";
+
 
 function App() {
   return (
-    <div className="App">
-      <Auth />
-    </div>
+      <Routes>
+        <Route path="/" element={<Landingpage />} />
+        <Route path="/auth" element={<Auth />} />
+      </Routes>
+    // <Auth/>
+
   );
 }
 

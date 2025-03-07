@@ -1,0 +1,556 @@
+/* Auth.css - Enhanced with additional animations, pulse effects, and smoother transitions */
+.mainContainer {
+    font-family: 'Roboto', Arial, sans-serif;
+    background: #000000; /* Black background */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
+    background-image: url("https://wallpapercat.com/w/full/e/5/7/945839-3840x2160-desktop-4k-matte-black-background-photo.jpg");
+}
+
+/* Add subtle gradient animation to the top bar */
+.mainContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 5px;
+    z-index: 10;
+    background-size: 300% 300%;
+    animation: gradientFlow 6s ease infinite;
+}
+
+.main {
+    background: #1a1a1a; /* Dark gray background for the form */
+    width: 100%;
+    max-width: 450px; /* Reduced width for container */
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1); /* Light shadow for contrast */
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    animation: slideUp 0.5s ease-out forwards, subtlePulse 4s ease-in-out infinite;
+    margin: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.main:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(255, 255, 255, 0.15);
+}
+
+.project-title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 30px;
+    color: #ffffff; /* White text */
+    position: relative;
+    text-align: center;
+    animation: fadeInDown 0.6s ease-out forwards;
+}
+
+/* Add underline animation to project title */
+.project-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    width: 0;
+    height: 3px;
+    background: linear-gradient(to right, #2b6cb0, #4299e1);
+    transition: width 0.5s ease, left 0.5s ease;
+}
+
+.main:hover .project-title::after {
+    width: 100px;
+    left: calc(50% - 50px);
+}
+
+input[type="text"],
+input[type="email"],
+input[type="number"],
+input[type="password"] {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid #444444; /* Darker border */
+    border-radius: 6px;
+    outline: none;
+    font-size: 16px;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    animation-fill-mode: both;
+    background: #333333; /* Dark background for inputs */
+    color: #ffffff; /* White text */
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="number"]:focus,
+input[type="password"]:focus {
+    border-color: #3182ce;
+    box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.1);
+    transform: translateY(-2px);
+    animation: inputFocusPulse 1.5s infinite;
+}
+
+input[type="text"]::placeholder,
+input[type="email"]::placeholder,
+input[type="number"]::placeholder,
+input[type="password"]::placeholder {
+    color: #a0aec0; /* Light gray placeholder */
+    transition: opacity 0.3s;
+}
+
+input:focus::placeholder {
+    opacity: 0.6;
+    transform: translateX(5px);
+}
+
+button {
+    width: 100%;
+    padding: 15px;
+    margin-top: 15px;
+    background: linear-gradient(to right, #2b6cb0, #4299e1);
+    border: none;
+    color: white;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    animation: fadeIn 0.5s ease-out forwards;
+    animation-delay: 0.5s;
+    animation-fill-mode: both;
+}
+
+/* Add ripple effect to button */
+button::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 5px;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.5);
+    opacity: 0;
+    border-radius: 100%;
+    transform: scale(1, 1) translate(-50%, -50%);
+    transform-origin: 50% 50%;
+}
+
+button:focus:not(:active)::after {
+    animation: ripple 1s ease-out;
+}
+
+button:hover {
+    background: linear-gradient(to right, #2563eb, #3b82f6);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(49, 130, 206, 0.2);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin: 20px 0;
+    animation: fadeIn 0.4s ease-out forwards;
+    animation-delay: 0.4s;
+    animation-fill-mode: both;
+}
+
+.form-check label {
+    color: #e2e8f0;
+    transition: color 0.3s ease;
+}
+
+.form-check:hover label {
+    color: #ffffff;
+}
+
+input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: #3182ce;
+    transition: transform 0.2s ease;
+}
+
+input[type="checkbox"]:hover {
+    transform: scale(1.1);
+}
+
+.form-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #ffffff; /* White text */
+    animation: fadeInDown 0.4s ease-out forwards;
+}
+
+/* Enhanced animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+    from { 
+        opacity: 0; 
+        transform: translateY(-20px);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from { 
+        opacity: 0; 
+        transform: translateY(30px);
+    }
+    to { 
+        opacity: 1; 
+        transform: translateY(0);
+    }
+}
+
+@keyframes gradientFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+@keyframes subtlePulse {
+    0% { box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1); }
+    50% { box-shadow: 0 10px 30px rgba(255, 255, 255, 0.18); }
+    100% { box-shadow: 0 10px 25px rgba(255, 255, 255, 0.1); }
+}
+
+@keyframes inputFocusPulse {
+    0% { border-color: #3182ce; }
+    50% { border-color: #4299e1; }
+    100% { border-color: #3182ce; }
+}
+
+@keyframes ripple {
+    0% {
+        transform: scale(0, 0);
+        opacity: 1;
+    }
+    20% {
+        transform: scale(25, 25);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(50, 50);
+        opacity: 0;
+    }
+}
+
+/* Sequential animation for form fields with improved timing */
+input:nth-child(1) { animation-delay: 0.1s; }
+input:nth-child(2) { animation-delay: 0.2s; }
+input:nth-child(3) { animation-delay: 0.3s; }
+input:nth-child(4) { animation-delay: 0.4s; }
+input:nth-child(5) { animation-delay: 0.5s; }
+
+/* Staggered entrance for form elements */
+.form-title { animation-delay: 0.1s; }
+.form-check { animation-delay: 0.6s; }
+button { animation-delay: 0.7s; }
+
+/* Improved responsive design */
+@media (max-width: 480px) {
+    .main {
+        padding: 25px 20px;
+        margin: 15px;
+        max-width: 90%;
+    }
+    
+    .project-title {
+        font-size: 24px;
+    }
+    
+    .form-title {
+        font-size: 20px;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    input[type="password"] {
+        padding: 12px;
+        font-size: 15px;
+    }
+}
+
+/* Toggle animation between signup and login - improved transitions */
+.login-container, .signup-container {
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fade-enter {
+    opacity: 0;
+    transform: translateY(20px) scale(0.95);
+}
+
+.fade-enter-active {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    transition: opacity 0.5s, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.fade-exit {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.fade-exit-active {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+    transition: opacity 0.5s, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Animated password strength indicator */
+.password-strength {
+    height: 5px;
+    margin-top: -15px;
+    margin-bottom: 15px;
+    border-radius: 3px;
+    overflow: hidden;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.strength-weak {
+    background-color: #fc8181;
+    width: 33%;
+    animation: strengthPulse 2s infinite;
+}
+
+.strength-medium {
+    background-color: #f6ad55;
+    width: 66%;
+    animation: strengthPulse 2s infinite;
+}
+
+.strength-strong {
+    background-color: #68d391;
+    width: 100%;
+    animation: strengthPulse 2s infinite;
+}
+
+@keyframes strengthPulse {
+    0% { opacity: 0.8; }
+    50% { opacity: 1; }
+    100% { opacity: 0.8; }
+}
+
+/* Enhanced style for the toggle link */
+.auth-toggle-link {
+    text-align: right;
+    margin-bottom: 20px;
+    color: #a0aec0;
+    font-size: 14px;
+    animation: fadeIn 0.4s ease-out forwards;
+    transition: transform 0.3s ease;
+}
+
+.auth-toggle-link:hover {
+    transform: translateY(-2px);
+}
+
+.auth-toggle-link a {
+    color: #3182ce;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.auth-toggle-link a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 2px;
+    background: #4299e1;
+    transition: width 0.3s ease;
+}
+
+.auth-toggle-link a:hover {
+    color: #4299e1;
+}
+
+.auth-toggle-link a:hover::after {
+    width: 100%;
+}
+
+/* Enhanced transitions for login and signup containers */
+.login, .signup {
+    width: 100%;
+    animation: fadeIn 0.5s ease-out forwards;
+    transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.login.active, .signup.active {
+    transform: scale(1);
+}
+
+.login.inactive, .signup.inactive {
+    transform: scale(0.95);
+    opacity: 0;
+    position: absolute;
+}
+
+.skills-selection {
+    width: 100%;
+    animation: fadeIn 0.4s ease-out forwards;
+}
+
+.skills-selection h3 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #ffffff;
+    animation: fadeInDown 0.4s ease-out forwards;
+}
+
+.skills-selection label {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    color: #e2e8f0;
+    font-size: 15px;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.skills-selection label:hover {
+    transform: translateX(5px);
+    color: #ffffff;
+}
+
+.skills-selection button {
+    margin-top: 20px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.skills-selection button:first-of-type {
+    background: linear-gradient(to right, #4a5568, #718096);
+    margin-right: 10px;
+}
+
+.skills-selection button:first-of-type:hover {
+    background: linear-gradient(to right, #2d3748, #4a5568);
+}
+
+/* Add animation for form submission */
+@keyframes formSubmit {
+    0% { transform: scale(1); }
+    50% { transform: scale(0.95); }
+    100% { transform: scale(0); }
+}
+
+.form-submitting {
+    animation: formSubmit 0.5s forwards;
+}
+
+/* Success message animation */
+.success-message {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(26, 26, 26, 0.95);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transform: scale(0.9);
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: -1;
+    border-radius: 12px;
+}
+
+.success-message.active {
+    opacity: 1;
+    transform: scale(1);
+    z-index: 10;
+}
+
+.success-message h3 {
+    color: #ffffff;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.success-message p {
+    color: #a0aec0;
+    text-align: center;
+    max-width: 80%;
+}
+
+.success-icon {
+    margin-bottom: 20px;
+    position: relative;
+    width: 60px;
+    height: 60px;
+}
+
+.success-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 3px solid #68d391;
+    transform: scale(0);
+    opacity: 0;
+    animation: successCircle 0.5s 0.2s forwards;
+}
+
+.success-icon::after {
+    content: '';
+    position: absolute;
+    top: 30%;
+    left: 20%;
+    width: 22px;
+    height: 12px;
+    border-left: 3px solid #68d391;
+    border-bottom: 3px solid #68d391;
+    transform: rotate(-45deg) scale(0);
+    opacity: 0;
+    animation: successCheck 0.5s 0.4s forwards;
+}
+
+@keyframes successCircle {
+    0% { transform: scale(0); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes successCheck {
+    0% { transform: rotate(-45deg) scale(0); opacity: 0; }
+    100% { transform: rotate(-45deg) scale(1); opacity: 1; }
+}
