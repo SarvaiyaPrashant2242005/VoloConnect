@@ -60,6 +60,12 @@
     border-radius: var(--radius-lg);
     padding: 1.5rem;
     border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .eventCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
   
   .eventHeader {
@@ -69,37 +75,67 @@
     margin-bottom: 1rem;
   }
   
-  .eventHeader h3 {
-    color: var(--text-light);
-    margin: 0;
+  .eventTitleSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
   }
   
-  .eventStatus {
+  .eventTitle {
+    color: var(--text-light);
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  .eventId {
+    font-size: 0.75rem;
+    color: var(--text-gray);
+  }
+  
+  .badge {
     padding: 0.25rem 0.75rem;
     border-radius: var(--radius-full);
     font-size: 0.875rem;
+    font-weight: 500;
   }
   
-  .eventStatus.upcoming {
-    background-color: var(--warning-color);
+  .statusActive {
+    background-color: var(--success-color);
     color: var(--text-light);
   }
   
-  .eventStatus.open {
-    background-color: var(--success-color);
+  .statusFull {
+    background-color: var(--warning-color);
+    color: var(--text-dark);
+  }
+  
+  .statusCompleted {
+    background-color: var(--info-color);
+    color: var(--text-light);
+  }
+  
+  .statusCancelled {
+    background-color: var(--danger-color);
+    color: var(--text-light);
+  }
+  
+  .statusPending {
+    background-color: var(--gray-color);
     color: var(--text-light);
   }
   
   .eventDescription {
     color: var(--text-gray);
-    margin-bottom: 1.5rem;
+    margin: 1rem 0;
+    line-height: 1.5;
   }
   
   .eventDetails {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1rem;
-    margin-bottom: 1.5rem;
+    margin: 1rem 0;
   }
   
   .eventDetail {
@@ -109,165 +145,34 @@
     color: var(--text-gray);
   }
   
-  .eventActions {
-    display: flex;
-    gap: 1rem;
+  .detailIcon {
+    font-size: 1.25rem;
   }
   
-  .actionButton {
-    padding: 0.5rem 1rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--border-color);
-    background: none;
-    color: var(--text-gray);
-    transition: all var(--transition-fast);
-    flex: 1;
+  .progressContainer {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-dark);
+    border-radius: var(--radius-full);
+    margin: 1rem 0;
+    overflow: hidden;
   }
   
-  .actionButton:hover {
-    background-color: var(--hover-bg);
-    color: var(--text-light);
-  }
-  
-  .actionButton.primaryButton {
+  .progressBar {
+    height: 100%;
     background-color: var(--primary-color);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+  }
+  
+  .eventSkills {
+    margin: 1rem 0;
+  }
+  
+  .skillsTitle {
     color: var(--text-light);
-    border: none;
-  }
-  
-  .actionButton.primaryButton:hover {
-    background-color: var(--primary-hover);
-  }
-  
-  /* Create Event Form Styles */
-  .createEventContainer {
-    max-width: 800px;
-    margin: 0 auto;
-  }
-  
-  .createEventForm {
-    background-color: var(--card-bg);
-    padding: 2rem;
-    border-radius: var(--radius-lg);
-    display: flex;
-    flex-direction: column;
-    gap: 1.5rem;
-  }
-  
-  .formGroup {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-  
-  .formGroup label {
-    color: var(--text-gray);
-    font-size: 0.9rem;
-  }
-  
-  .formGroup input,
-  .formGroup textarea {
-    padding: 0.75rem;
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    color: var(--text-light);
-    transition: all var(--transition-fast);
-  }
-  
-  .formGroup input:focus,
-  .formGroup textarea:focus {
-    border-color: var(--primary-color);
-    outline: none;
-  }
-  
-  .formRow {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1.5rem;
-  }
-  
-  .submitButton {
-    padding: 1rem;
-    background-color: var(--primary-color);
-    color: var(--text-light);
-    border: none;
-    border-radius: var(--radius-md);
-    font-weight: 500;
-    transition: all var(--transition-fast);
-  }
-  
-  .submitButton:hover {
-    background-color: var(--primary-hover);
-    transform: translateY(-1px);
-  }
-  
-  /* Profile Styles */
-  .profileContainer {
-    background-color: var(--card-bg);
-    border-radius: var(--radius-lg);
-    padding: 2rem;
-  }
-  
-  .profileHeader {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    margin-bottom: 3rem;
-  }
-  
-  .profileAvatar {
-    width: 100px;
-    height: 100px;
-    background-color: var(--primary-color);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 2.5rem;
-    color: var(--text-light);
-    font-weight: 600;
-  }
-  
-  .profileInfo h2 {
-    color: var(--text-light);
-    margin: 0 0 0.5rem 0;
-  }
-  
-  .profileInfo p {
-    color: var(--text-gray);
-    margin: 0;
-  }
-  
-  .profileContent {
-    display: grid;
-    gap: 2rem;
-  }
-  
-  .profileSection {
-    padding: 1.5rem;
-    background-color: var(--bg-secondary);
-    border-radius: var(--radius-lg);
-  }
-  
-  .profileSection h3 {
-    color: var(--text-light);
-    margin: 0 0 1.5rem 0;
-  }
-  
-  .profileField {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-  
-  .profileField label {
-    color: var(--text-gray);
-  }
-  
-  .profileField p {
-    color: var(--text-light);
-    margin: 0;
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
   }
   
   .skillsList {
@@ -276,67 +181,137 @@
     gap: 0.5rem;
   }
   
-  .skillChip {
-    padding: 0.5rem 1rem;
-    background-color: var(--hover-bg);
-    color: var(--text-light);
+  .skillBadge {
+    background-color: var(--primary-color-light);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
     border-radius: var(--radius-full);
-    font-size: 0.875rem;
+    font-size: 0.75rem;
+    font-weight: 500;
   }
   
-  .statsGrid {
+  .eventActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .button {
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+  }
+  
+  .button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background-color: var(--primary-color-dark);
+  }
+  
+  .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .buttonOutline {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+  }
+  
+  .buttonOutline:hover:not(:disabled) {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+  }
+  
+  /* Responsive Grid */
+  .eventsGrid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   }
   
-  .statItem {
+  @media (max-width: 768px) {
+    .eventsGrid {
+      grid-template-columns: 1fr;
+    }
+    
+    .eventDetails {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Loading and Error States */
+  .loadingContainer,
+  .errorContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+  }
+  
+  .loadingSpinner {
+    border: 3px solid var(--bg-dark);
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* No Events State */
+  .noEvents {
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+  }
+  
+  .noEventsIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Event Card Loading and Error States */
+  .eventCardLoading,
+  .eventCardError {
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .eventCardError {
+    color: var(--danger-color);
     text-align: center;
   }
   
-  .statLabel {
-    display: block;
-    color: var(--text-gray);
-    margin-bottom: 0.5rem;
-    font-size: 0.875rem;
+  .eventCardError button {
+    padding: 0.5rem 1rem;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
   }
   
-  .statValue {
-    display: block;
-    color: var(--primary-color);
-    font-size: 1.5rem;
-    font-weight: 600;
-  }
-  
-  /* Responsive Adjustments */
-  @media (max-width: 768px) {
-    .formRow {
-      grid-template-columns: 1fr;
-    }
-  
-    .eventsHeader {
-      flex-direction: column;
-      gap: 1rem;
-    }
-  
-    .eventsFilter {
-      width: 100%;
-      overflow-x: auto;
-      padding-bottom: 0.5rem;
-    }
-  
-    .profileHeader {
-      flex-direction: column;
-      text-align: center;
-      gap: 1rem;
-    }
-  
-    .profileField {
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-  
-    .statsGrid {
-      grid-template-columns: 1fr;
-    }
+  .eventCardError button:hover {
+    opacity: 0.9;
   }

@@ -1,16 +1,13 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:3001';
-
-// Create axios instance with base URL
 const api = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: 'http://localhost:3001',
   headers: {
-    'Content-Type': 'application/json',
-  },
+    'Content-Type': 'application/json'
+  }
 });
 
-// Add request interceptor to include user-id
+// Add request interceptor to include user ID
 api.interceptors.request.use(
   (config) => {
     const userId = sessionStorage.getItem('userId');
@@ -24,14 +21,11 @@ api.interceptors.request.use(
   }
 );
 
-// Add response interceptor to handle errors
+// Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      sessionStorage.removeItem('userId');
-      window.location.href = '/login';
-    }
+    console.error('API Error:', error.response || error);
     return Promise.reject(error);
   }
 );

@@ -4,6 +4,8 @@ import LandingPage from './components/LandingPage'
 import Dashboard from './components/dashboard/dashboard'
 import LoginForm from './components/auth/LoginForm'
 import RegisterForm from './components/auth/RegisterForm'
+import CreateEvent from './components/dashboard/CreateEvent'
+import Events from './components/Events'
 import './App.css'
 
 // Protected route wrapper
@@ -82,6 +84,7 @@ const App = () => {
       }}>
         <Routes>
           <Route path="/" element={<LandingPage />} />
+          <Route path="/events" element={<Events />} />
           <Route
             path="/login"
             element={
@@ -103,10 +106,26 @@ const App = () => {
             }
           />
           <Route
-            path="/dashboard/*"
+            path="/dashboard"
             element={
               <ProtectedRoute isAuthenticated={isAuthenticated} element={
                 <Dashboard user={user} onLogout={handleLogout} />
+              } />
+            }
+          />
+          <Route
+            path="/dashboard/create-event"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated} element={
+                <CreateEvent user={user} />
+              } />
+            }
+          />
+          <Route
+            path="/events/create"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated} element={
+                <CreateEvent user={user} />
               } />
             }
           />

@@ -17,7 +17,6 @@ const LoginForm = ({ onLogin }) => {
       ...formData,
       [e.target.name]: e.target.value,
     });
-    // Clear error when user starts typing
     if (error) setError('');
   };
 
@@ -50,7 +49,6 @@ const LoginForm = ({ onLogin }) => {
     try {
       const response = await api.post('/api/auth/login', formData);
       if (response.data.success) {
-        // Make sure skills are properly formatted before storing
         const user = {
           ...response.data.user,
           skills: Array.isArray(response.data.user.skills) 
