@@ -4,9 +4,9 @@ import api from '../../config/api';
 import styles from './Dashboard.module.css';
 import { eventService } from '../../services/eventService';
 import CreateEvent from './CreateEvent';
-import { Button } from '@mui/material';
+import { Button, IconButton, Menu } from '@mui/material';
 
-// Event card component with improved visual design
+// Event card component with improved visual design for laptop screens
 const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser }) => {
   const formattedDate = new Date(event.start_date).toLocaleDateString('en-US', {
     weekday: 'short',
@@ -37,7 +37,9 @@ const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser
           {event.status}
         </span>
       </div>
+      
       <p className={styles.eventDescription}>{event.description}</p>
+      
       <div className={styles.eventDetails}>
         <div className={styles.eventDetail}>
           <span className={styles.detailIcon}>📍</span>
@@ -57,6 +59,7 @@ const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser
           </span>
         </div>
       </div>
+      
       <div className={styles.eventProgress}>
         <div 
           className={styles.progressBar} 
@@ -68,9 +71,10 @@ const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser
           <span className={styles.progressIndicator}></span>
         </div>
       </div>
+      
       <div className={styles.eventActions}>
         <button 
-          className={styles.actionButton} 
+          className={`${styles.actionButton} ${styles.viewButton}`}
           onClick={() => onViewDetails(event.id)}
         >
           View Details
@@ -78,7 +82,7 @@ const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser
         
         {isOrganizer ? (
           <button 
-            className={`${styles.actionButton} ${styles.secondaryButton}`}
+            className={`${styles.actionButton} ${styles.editButton}`}
             onClick={() => onEditEvent(event.id)}
           >
             Edit Event
@@ -136,6 +140,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [filterStatus, setFilterStatus] = useState('all');
   const navigate = useNavigate();
   const [statsLoading, setStatsLoading] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Parse user skills if they're stored as a JSON string
   const userSkills = useMemo(() => {
@@ -165,8 +170,48 @@ const Dashboard = ({ user, onLogout }) => {
       fetchDashboardData();
     }, 300000); // 5 minutes
 
-    return () => clearInterval(refreshInterval);
-  }, []);
+    // Add event listener for window resize to handle sidebar visibility
+    const handleResize = () => {
+      if (window.innerWidth > 768 && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    // Add event listener for ESC key to close mobile menu
+    const handleEscKey = (e) => {
+      if (e.key === 'Escape' && mobileMenuOpen) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    document.addEventListener('keydown', handleEscKey);
+
+    // Add event listener to disable body scrolling when mobile menu is open
+    if (mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      clearInterval(refreshInterval);
+      window.removeEventListener('resize', handleResize);
+      document.removeEventListener('keydown', handleEscKey);
+      document.body.style.overflow = '';
+    };
+  }, [mobileMenuOpen]);
+
+  const toggleMobileMenu = () => {
+    setMobileMenuOpen(!mobileMenuOpen);
+  };
+
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (window.innerWidth <= 768) {
+      setMobileMenuOpen(false);
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -336,36 +381,54 @@ const Dashboard = ({ user, onLogout }) => {
 
   return (
     <div className={styles.dashboardContainer}>
+      {/* Mobile menu toggle button */}
+      <button 
+        className={styles.mobileMenuButton}
+        onClick={toggleMobileMenu}
+        aria-label="Toggle menu"
+        aria-expanded={mobileMenuOpen}
+      >
+        {mobileMenuOpen ? '✕' : '☰'}
+      </button>
+
       {/* Sidebar */}
-      <aside className={styles.sidebar}>
+      <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
         <div className={styles.sidebarHeader}>
           <h2>VoloConnect</h2>
+          {/* Close button visible only on mobile */}
+          <button 
+            className={styles.mobileCloseButton}
+            onClick={toggleMobileMenu}
+            aria-label="Close menu"
+          >
+            ✕
+          </button>
         </div>
         <nav className={styles.sidebarNav}>
           <button 
             className={`${styles.navItem} ${activeTab === 'overview' ? styles.active : ''}`}
-            onClick={() => setActiveTab('overview')}
+            onClick={() => handleTabChange('overview')}
           >
             <span className={styles.navIcon}>📊</span>
             Overview
           </button>
           <button 
             className={`${styles.navItem} ${activeTab === 'all-events' ? styles.active : ''}`}
-            onClick={() => setActiveTab('all-events')}
+            onClick={() => handleTabChange('all-events')}
           >
             <span className={styles.navIcon}>📅</span>
             All Events
           </button>
           <button 
             className={`${styles.navItem} ${activeTab === 'my-events' ? styles.active : ''}`}
-            onClick={() => setActiveTab('my-events')}
+            onClick={() => handleTabChange('my-events')}
           >
             <span className={styles.navIcon}>🗓️</span>
             My Events
           </button>
           <button 
             className={`${styles.navItem} ${activeTab === 'profile' ? styles.active : ''}`}
-            onClick={() => setActiveTab('profile')}
+            onClick={() => handleTabChange('profile')}
           >
             <span className={styles.navIcon}>👤</span>
             Profile
@@ -378,6 +441,13 @@ const Dashboard = ({ user, onLogout }) => {
           </button>
         </div>
       </aside>
+
+      {/* Overlay for mobile menu */}
+      <div 
+        className={`${styles.mobileOverlay} ${mobileMenuOpen ? styles.active : ''}`} 
+        onClick={toggleMobileMenu}
+        aria-hidden="true"
+      />
 
       {/* Main Content */}
       <main className={styles.mainContent}>

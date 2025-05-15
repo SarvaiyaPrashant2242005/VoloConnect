@@ -13,7 +13,9 @@ import {
   InputLabel,
   Select,
   Snackbar,
-  Alert 
+  Alert,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider, DateTimePicker } from '@mui/x-date-pickers';
@@ -25,6 +27,9 @@ const EventEdit = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
   
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -123,8 +128,8 @@ const EventEdit = () => {
 
   if (loading) {
     return (
-      <Container maxWidth="md" sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+      <Container maxWidth="md" sx={{ py: isMobile ? 2 : 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: isMobile ? 2 : 4 }}>
           <Typography>Loading event details...</Typography>
         </Box>
       </Container>
@@ -132,14 +137,35 @@ const EventEdit = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h4" component="h1" gutterBottom>
+    <Container 
+      maxWidth="md" 
+      sx={{ 
+        py: isMobile ? 2 : 4,
+        px: isMobile ? 1 : 2
+      }}
+    >
+      <Paper 
+        elevation={3} 
+        sx={{ 
+          p: isMobile ? 2 : 4,
+          borderRadius: isMobile ? 1 : 2,
+          bgcolor: 'background.paper',
+          color: 'text.primary',
+          border: 1,
+          borderColor: 'divider'
+        }}
+      >
+        <Typography 
+          variant={isMobile ? "h5" : "h4"} 
+          component="h1" 
+          gutterBottom
+          sx={{ mb: isMobile ? 2 : 3, color: 'text.primary' }}
+        >
           Edit Event
         </Typography>
         
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
+          <Grid container spacing={isMobile ? 2 : 3}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -148,6 +174,8 @@ const EventEdit = () => {
                 value={eventData.title}
                 onChange={handleChange}
                 required
+                size={isMobile ? "small" : "medium"}
+                sx={{ bgcolor: 'background.paper' }}
               />
             </Grid>
             
@@ -159,8 +187,10 @@ const EventEdit = () => {
                 value={eventData.description}
                 onChange={handleChange}
                 multiline
-                rows={4}
+                rows={isMobile ? 3 : 4}
                 required
+                size={isMobile ? "small" : "medium"}
+                sx={{ bgcolor: 'background.paper' }}
               />
             </Grid>
             
@@ -172,6 +202,8 @@ const EventEdit = () => {
                 value={eventData.location}
                 onChange={handleChange}
                 required
+                size={isMobile ? "small" : "medium"}
+                sx={{ bgcolor: 'background.paper' }}
               />
             </Grid>
             
@@ -181,7 +213,15 @@ const EventEdit = () => {
                   label="Start Date & Time"
                   value={eventData.start_date}
                   onChange={(date) => handleDateChange('start_date', date)}
-                  renderInput={(params) => <TextField {...params} fullWidth required />}
+                  renderInput={(params) => (
+                    <TextField 
+                      {...params} 
+                      fullWidth 
+                      required 
+                      size={isMobile ? "small" : "medium"}
+                      sx={{ bgcolor: 'background.paper' }}
+                    />
+                  )}
                 />
               </LocalizationProvider>
             </Grid>
@@ -192,13 +232,21 @@ const EventEdit = () => {
                   label="End Date & Time"
                   value={eventData.end_date}
                   onChange={(date) => handleDateChange('end_date', date)}
-                  renderInput={(params) => <TextField {...params} fullWidth required />}
+                  renderInput={(params) => (
+                    <TextField 
+                      {...params} 
+                      fullWidth 
+                      required 
+                      size={isMobile ? "small" : "medium"}
+                      sx={{ bgcolor: 'background.paper' }}
+                    />
+                  )}
                   minDateTime={new Date(eventData.start_date.getTime() + 1800000)} // At least 30 min after start
                 />
               </LocalizationProvider>
             </Grid>
             
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
                 label="Maximum Volunteers"
@@ -208,11 +256,13 @@ const EventEdit = () => {
                 onChange={handleChange}
                 inputProps={{ min: 1 }}
                 required
+                size={isMobile ? "small" : "medium"}
+                sx={{ bgcolor: 'background.paper' }}
               />
             </Grid>
             
-            <Grid item xs={12} md={6}>
-              <FormControl fullWidth>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth size={isMobile ? "small" : "medium"} sx={{ bgcolor: 'background.paper' }}>
                 <InputLabel>Status</InputLabel>
                 <Select
                   name="status"
@@ -228,21 +278,51 @@ const EventEdit = () => {
             </Grid>
             
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => navigate('/dashboard')}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={saving}
-                >
-                  {saving ? 'Saving...' : 'Save Changes'}
-                </Button>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: isMobile ? 1 : 2, 
+                justifyContent: 'flex-end',
+                flexDirection: isMobile ? 'column' : 'row',
+                mt: isMobile ? 1 : 2
+              }}>
+                {isMobile ? (
+                  <>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      disabled={saving}
+                      fullWidth
+                      size="large"
+                    >
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                    <Button
+                      variant="outlined"
+                      onClick={() => navigate('/dashboard')}
+                      fullWidth
+                    >
+                      Cancel
+                    </Button>
+                  </>
+                ) : (
+                  <>
+                    <Button
+                      variant="outlined"
+                      onClick={() => navigate('/dashboard')}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      variant="contained"
+                      color="primary"
+                      disabled={saving}
+                    >
+                      {saving ? 'Saving...' : 'Save Changes'}
+                    </Button>
+                  </>
+                )}
               </Box>
             </Grid>
           </Grid>
@@ -253,6 +333,10 @@ const EventEdit = () => {
         open={openSnackbar} 
         autoHideDuration={6000} 
         onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ 
+          vertical: 'bottom', 
+          horizontal: isMobile ? 'center' : 'right' 
+        }}
       >
         <Alert 
           onClose={() => setOpenSnackbar(false)} 

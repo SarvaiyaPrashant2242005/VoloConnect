@@ -14,7 +14,9 @@ import {
   Grid,
   Snackbar,
   Alert,
-  Card
+  Card,
+  useMediaQuery,
+  useTheme
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../config/api';
@@ -24,6 +26,10 @@ const VolunteerSignup = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'));
+  
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -122,8 +128,8 @@ const VolunteerSignup = () => {
 
   if (loading && !event) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+      <Container sx={{ py: isMobile ? 2 : 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: isMobile ? 2 : 4 }}>
           <Typography>Loading event details...</Typography>
         </Box>
       </Container>
@@ -132,8 +138,8 @@ const VolunteerSignup = () => {
 
   if (error && !event) {
     return (
-      <Container sx={{ py: 4 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', my: 4 }}>
+      <Container sx={{ py: isMobile ? 2 : 4 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', my: isMobile ? 2 : 4 }}>
           <Typography color="error">{error}</Typography>
         </Box>
       </Container>
@@ -141,35 +147,70 @@ const VolunteerSignup = () => {
   }
 
   return (
-    <Container maxWidth="md" sx={{ py: 4 }}>
+    <Container 
+      maxWidth="md" 
+      sx={{ 
+        py: isMobile ? 2 : 4,
+        px: isMobile ? 1 : 2 
+      }}
+    >
       <Paper 
         elevation={3} 
         sx={{ 
-          p: 4, 
+          p: isMobile ? 2 : 4, 
           bgcolor: 'background.paper',
           color: 'text.primary',
-          borderRadius: 2
+          borderRadius: isMobile ? 1 : 2,
+          border: 1,
+          borderColor: 'divider'
         }}
       >
-        <Typography variant="h4" component="h1" gutterBottom>
+        <Typography 
+          variant={isMobile ? "h5" : "h4"} 
+          component="h1" 
+          gutterBottom
+          color="text.primary"
+        >
           Volunteer for Event
         </Typography>
 
         {isOrganizer && (
-          <Card sx={{ mb: 3, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
-            <Typography variant="body1">
+          <Card sx={{ 
+            mb: isMobile ? 2 : 3, 
+            p: isMobile ? 1.5 : 2, 
+            bgcolor: 'info.light', 
+            color: 'info.contrastText' 
+          }}>
+            <Typography variant="body2" sx={{ fontSize: isMobile ? '0.875rem' : '1rem' }}>
               You are the organizer of this event. Signing up as a volunteer will automatically approve your registration.
             </Typography>
           </Card>
         )}
 
         {event && (
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h5" gutterBottom>{event.title}</Typography>
-            <Typography variant="body1" paragraph>{event.description}</Typography>
-            <Box sx={{ display: 'flex', gap: 2, mb: 2 }}>
-              <Typography variant="body2">📍 {event.location}</Typography>
-              <Typography variant="body2">
+          <Box sx={{ mb: isMobile ? 3 : 4 }}>
+            <Typography 
+              variant={isMobile ? "h6" : "h5"} 
+              gutterBottom 
+              color="text.primary"
+            >
+              {event.title}
+            </Typography>
+            <Typography 
+              variant="body1" 
+              paragraph 
+              color="text.secondary"
+            >
+              {event.description}
+            </Typography>
+            <Box sx={{ 
+              display: 'flex', 
+              flexDirection: isMobile ? 'column' : 'row',
+              gap: isMobile ? 0.5 : 2, 
+              mb: 2 
+            }}>
+              <Typography variant="body2" color="text.secondary">📍 {event.location}</Typography>
+              <Typography variant="body2" color="text.secondary">
                 📅 {new Date(event.start_date).toLocaleDateString()}
               </Typography>
             </Box>
@@ -177,7 +218,7 @@ const VolunteerSignup = () => {
         )}
 
         <form onSubmit={handleSubmit}>
-          <Grid container spacing={3}>
+          <Grid container spacing={isMobile ? 2 : 3}>
             <Grid item xs={12}>
               <TextField
                 fullWidth
@@ -187,21 +228,36 @@ const VolunteerSignup = () => {
                 onChange={handleChange}
                 placeholder="e.g., 9 AM to 5 PM"
                 required
+                size={isMobile ? "small" : "medium"}
+                sx={{ bgcolor: 'background.paper' }}
               />
             </Grid>
 
             <Grid item xs={12}>
-              <Typography variant="subtitle1" gutterBottom>
+              <Typography 
+                variant="subtitle1" 
+                gutterBottom
+                color="text.primary"
+              >
                 Skills You Can Contribute
               </Typography>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+              <Box sx={{ 
+                display: 'flex', 
+                flexWrap: 'wrap', 
+                gap: isMobile ? 0.5 : 1 
+              }}>
                 {skillOptions.map(skill => (
                   <Chip
                     key={skill}
                     label={skill}
                     onClick={() => handleSkillToggle(skill)}
                     color={volunteerData.skills.includes(skill) ? "primary" : "default"}
-                    sx={{ m: 0.5 }}
+                    sx={{ 
+                      m: isMobile ? 0.3 : 0.5,
+                      fontSize: isMobile ? '0.75rem' : '0.875rem',
+                      height: isMobile ? '28px' : '32px'
+                    }}
+                    size={isMobile ? "small" : "medium"}
                   />
                 ))}
               </Box>
@@ -215,7 +271,9 @@ const VolunteerSignup = () => {
                 value={volunteerData.specialNeeds}
                 onChange={handleChange}
                 multiline
-                rows={2}
+                rows={isMobile ? 1 : 2}
+                size={isMobile ? "small" : "medium"}
+                sx={{ bgcolor: 'background.paper' }}
               />
             </Grid>
 
@@ -227,15 +285,24 @@ const VolunteerSignup = () => {
                 value={volunteerData.notes}
                 onChange={handleChange}
                 multiline
-                rows={3}
+                rows={isMobile ? 2 : 3}
+                size={isMobile ? "small" : "medium"}
+                sx={{ bgcolor: 'background.paper' }}
               />
             </Grid>
 
             <Grid item xs={12}>
-              <Box sx={{ display: 'flex', gap: 2, justifyContent: 'flex-end' }}>
+              <Box sx={{ 
+                display: 'flex', 
+                gap: isMobile ? 1 : 2, 
+                flexDirection: isMobile ? 'column-reverse' : 'row',
+                justifyContent: 'flex-end' 
+              }}>
                 <Button
                   variant="outlined"
                   onClick={() => navigate(-1)}
+                  fullWidth={isMobile}
+                  size={isMobile ? "medium" : "large"}
                 >
                   Cancel
                 </Button>
@@ -244,6 +311,8 @@ const VolunteerSignup = () => {
                   variant="contained"
                   color="primary"
                   disabled={loading}
+                  fullWidth={isMobile}
+                  size={isMobile ? "medium" : "large"}
                 >
                   {loading ? 'Submitting...' : 'Volunteer Now'}
                 </Button>
@@ -253,17 +322,23 @@ const VolunteerSignup = () => {
         </form>
       </Paper>
 
-      <Snackbar 
-        open={openSnackbar} 
-        autoHideDuration={6000} 
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
         onClose={() => setOpenSnackbar(false)}
+        anchorOrigin={{ 
+          vertical: 'bottom', 
+          horizontal: isMobile ? 'center' : 'right' 
+        }}
       >
-        <Alert 
-          onClose={() => setOpenSnackbar(false)} 
-          severity={success ? "success" : "error"} 
+        <Alert
+          onClose={() => setOpenSnackbar(false)}
+          severity={success ? "success" : "error"}
           sx={{ width: '100%' }}
         >
-          {success ? 'Successfully signed up as volunteer!' : error}
+          {success
+            ? 'Successfully registered as a volunteer!'
+            : error}
         </Alert>
       </Snackbar>
     </Container>
