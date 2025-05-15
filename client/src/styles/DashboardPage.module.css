@@ -1,0 +1,279 @@
+.eventsPageContainer {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.eventsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.eventsHeader h1 {
+  margin: 0;
+  color: #333;
+  font-size: 2rem;
+}
+
+.createEventButton {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.createEventButton:hover {
+  background-color: #45a049;
+}
+
+.tabsContainer {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 10px;
+}
+
+.tabButton {
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: #666;
+  transition: all 0.3s;
+  border-radius: 4px;
+}
+
+.tabButton:hover {
+  background-color: #f5f5f5;
+  color: #333;
+}
+
+.activeTab {
+  color: #4CAF50;
+  font-weight: 500;
+  position: relative;
+}
+
+.activeTab::after {
+  content: '';
+  position: absolute;
+  bottom: -11px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #4CAF50;
+}
+
+.eventsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.eventCard {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.eventCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.eventHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 15px;
+}
+
+.eventHeader h3 {
+  margin: 0;
+  color: #333;
+  font-size: 1.2rem;
+}
+
+.eventStatus {
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.eventDescription {
+  color: #666;
+  margin-bottom: 15px;
+  line-height: 1.4;
+}
+
+.eventDetails {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 15px;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon {
+  font-size: 1.2rem;
+}
+
+.skillsContainer {
+  margin-top: 15px;
+}
+
+.skillsContainer h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.skillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skillTag {
+  background-color: #e9ecef;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.eventActions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto;
+  padding-top: 15px;
+}
+
+.viewButton, .joinButton {
+  flex: 1;
+  padding: 8px 16px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.3s;
+}
+
+.viewButton {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+.viewButton:hover {
+  background-color: #dee2e6;
+}
+
+.joinButton {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.joinButton:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+.joinButton:disabled {
+  background-color: #cccccc;
+  cursor: not-allowed;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+}
+
+.spinner {
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #4CAF50;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.errorContainer {
+  text-align: center;
+  padding: 20px;
+  color: #dc3545;
+}
+
+.noEventsContainer {
+  text-align: center;
+  padding: 40px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.searchIcon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+}
+
+.searchIcon img {
+  width: 100%;
+  height: 100%;
+  opacity: 0.6;
+}
+
+.noEventsContainer h2 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.noEventsContainer p {
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.createNewEventButton {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+}
+
+.createNewEventButton:hover {
+  background-color: #45a049;
+}   
