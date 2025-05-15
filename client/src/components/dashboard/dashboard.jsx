@@ -321,13 +321,6 @@ const Dashboard = ({ user, onLogout }) => {
             My Events
           </button>
           <button 
-            className={`${styles.navItem} ${activeTab === 'volunteer' ? styles.active : ''}`}
-            onClick={() => setActiveTab('volunteer')}
-          >
-            <span className={styles.navIcon}>🤝</span>
-            Volunteer
-          </button>
-          <button 
             className={`${styles.navItem} ${activeTab === 'profile' ? styles.active : ''}`}
             onClick={() => setActiveTab('profile')}
           >
@@ -399,47 +392,6 @@ const Dashboard = ({ user, onLogout }) => {
                   trend={8}
                 />
               </div>
-
-              {/* Volunteer Section */}
-              <section className={styles.volunteersSection}>
-                <div className={styles.sectionHeader}>
-                  <h2>My Volunteer Activities</h2>
-                  <Button
-                    className={styles.viewAllButton}
-                    onClick={() => navigate('/volunteer-history')}
-                  >
-                    View All
-                  </Button>
-                </div>
-                <div className={styles.volunteerStats}>
-                  <div className={styles.volunteerStat}>
-                    <span className={styles.statValue}>12</span>
-                    <span className={styles.statLabel}>Hours Contributed</span>
-                  </div>
-                  <div className={styles.volunteerStat}>
-                    <span className={styles.statValue}>3</span>
-                    <span className={styles.statLabel}>Events Participated</span>
-                  </div>
-                  <div className={styles.volunteerStat}>
-                    <span className={styles.statValue}>2</span>
-                    <span className={styles.statLabel}>Upcoming Commitments</span>
-                  </div>
-                </div>
-                <div className={styles.volunteerActions}>
-                  <button 
-                    className={styles.actionButton}
-                    onClick={() => navigate('/events')}
-                  >
-                    Find Events to Volunteer
-                  </button>
-                  <button 
-                    className={styles.actionButton}
-                    onClick={() => navigate('/volunteer-history')}
-                  >
-                    View Volunteer History
-                  </button>
-                </div>
-              </section>
 
               {/* Events Section */}
               <section className={styles.eventsSection}>
@@ -588,96 +540,6 @@ const Dashboard = ({ user, onLogout }) => {
                     />
                   ))
                 )}
-              </div>
-            </section>
-          )}
-
-          {/* New Volunteer Tab */}
-          {activeTab === 'volunteer' && (
-            <section className={styles.volunteerSection}>
-              <div className={styles.sectionHeader}>
-                <h2>Volunteer Dashboard</h2>
-              </div>
-              
-              {/* Volunteer Stats */}
-              <div className={styles.statsGrid}>
-                <StatCard
-                  title="Hours Contributed"
-                  value="15"
-                  icon="⏱️"
-                  trend={10}
-                />
-                <StatCard
-                  title="Events Joined"
-                  value="4"
-                  icon="🤝"
-                  trend={25}
-                />
-                <StatCard
-                  title="Upcoming Events"
-                  value="2"
-                  icon="📅"
-                  trend={0}
-                />
-                <StatCard
-                  title="Skills Utilized"
-                  value="6"
-                  icon="🛠️"
-                  trend={15}
-                />
-              </div>
-              
-              {/* Volunteer Actions */}
-              <div className={styles.actionCards}>
-                <div className={styles.actionCard} onClick={() => navigate('/events')}>
-                  <div className={styles.actionIcon}>🔍</div>
-                  <h3>Find Opportunities</h3>
-                  <p>Browse available volunteer opportunities</p>
-                </div>
-                <div className={styles.actionCard} onClick={() => navigate('/volunteer-history')}>
-                  <div className={styles.actionIcon}>📊</div>
-                  <h3>My History</h3>
-                  <p>View your volunteering history and stats</p>
-                </div>
-                <div className={styles.actionCard} onClick={() => navigate('/volunteers/certificates')}>
-                  <div className={styles.actionIcon}>🏆</div>
-                  <h3>Certificates</h3>
-                  <p>Download your volunteer certificates</p>
-                </div>
-                <div className={styles.actionCard} onClick={() => navigate('/volunteer-export')}>
-                  <div className={styles.actionIcon}>📤</div>
-                  <h3>Export Data</h3>
-                  <p>Export your volunteer data</p>
-                </div>
-              </div>
-              
-              {/* Upcoming Commitments */}
-              <div className={styles.upcomingCommitments}>
-                <h3>Upcoming Volunteer Commitments</h3>
-                <div className={styles.commitmentsList}>
-                  <div className={styles.commitmentCard}>
-                    <div className={styles.commitmentHeader}>
-                      <h4>Community Garden Cleanup</h4>
-                      <span className={styles.commitmentDate}>Aug 15, 2023</span>
-                    </div>
-                    <p>Help clean and prepare the community garden for fall planting</p>
-                    <div className={styles.commitmentFooter}>
-                      <span>📍 Central Park</span>
-                      <span>⏱️ 3 hours committed</span>
-                    </div>
-                  </div>
-                  <div className={styles.commitmentCard}>
-                    <div className={styles.commitmentHeader}>
-                      <h4>Food Bank Distribution</h4>
-                      <span className={styles.commitmentDate}>Aug 22, 2023</span>
-                    </div>
-                    <p>Help distribute food to families in need at the local food bank</p>
-                    <div className={styles.commitmentFooter}>
-                      <span>📍 Community Center</span>
-                      <span>⏱️ 4 hours committed</span>
-                    </div>
-                  </div>
-                </div>
               </div>
             </section>
           )}
