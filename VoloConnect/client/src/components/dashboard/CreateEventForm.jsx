@@ -1,12 +1,13 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { eventService } from '../../services/eventService';
-import styles from './Dashboard.module.css';
+import api from '../../config/api';
+import styles from './CreateEventForm.module.css';
 
-const CreateEventForm = () => {
+const CreateEventForm = ({ user }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [errors, setErrors] = useState({});
+  
   const [eventData, setEventData] = useState({
     title: '',
     description: '',
@@ -18,8 +19,7 @@ const CreateEventForm = () => {
     status: 'active'
   });
 
-  const [errors, setErrors] = useState({});
-
+  // Predefined skills options
   const skillOptions = [
     'Teaching',
     'First Aid',
@@ -33,19 +33,39 @@ const CreateEventForm = () => {
     'Leadership'
   ];
 
+  // Status options
+  const statusOptions = [
+    { value: 'active', label: 'Active' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'completed', label: 'Completed' },
+    { value: 'cancelled', label: 'Cancelled' }
+  ];
+
   const validate = () => {
     const newErrors = {};
-    if (!eventData.title) newErrors.title = 'Title is required';
-    if (!eventData.description) newErrors.description = 'Description is required';
-    if (!eventData.start_date) newErrors.start_date = 'Start date is required';
-    if (!eventData.end_date) newErrors.end_date = 'End date is required';
-    if (!eventData.location) newErrors.location = 'Location is required';
-    if (!eventData.max_volunteers) newErrors.max_volunteers = 'Number of volunteers is required';
-    if (eventData.max_volunteers <= 0) newErrors.max_volunteers = 'Number of volunteers must be greater than 0';
+    
+    if (!eventData.title) {
+      newErrors.title = 'Title is required';
+    }
+    if (!eventData.description) {
+      newErrors.description = 'Description is required';
+    }
+    if (!eventData.start_date) {
+      newErrors.start_date = 'Start date is required';
+    }
+    if (!eventData.end_date) {
+      newErrors.end_date = 'End date is required';
+    }
+    if (!eventData.location) {
+      newErrors.location = 'Location is required';
+    }
+    if (!eventData.max_volunteers) {
+      newErrors.max_volunteers = 'Maximum volunteers is required';
+    }
     if (new Date(eventData.end_date) <= new Date(eventData.start_date)) {
       newErrors.end_date = 'End date must be after start date';
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -55,38 +75,27 @@ const CreateEventForm = () => {
     if (validate()) {
       try {
         setLoading(true);
-        setError(null);
 
-        // Format the data
         const formattedData = {
-          ...eventData,
+          title: eventData.title.trim(),
+          description: eventData.description.trim(),
+          start_date: new Date(eventData.start_date).toISOString(),
+          end_date: new Date(eventData.end_date).toISOString(),
+          location: eventData.location.trim(),
+          required_skills: JSON.stringify(eventData.required_skills),
           max_volunteers: parseInt(eventData.max_volunteers),
-          required_skills: JSON.stringify(eventData.required_skills)
+          status: eventData.status
         };
 
-        // Create the event
-        const result = await eventService.createEvent(formattedData);
-        
-        // Show success message
-        alert('Event created successfully!');
-        
-        // Reset form
-        setEventData({
-          title: '',
-          description: '',
-          start_date: '',
-          end_date: '',
-          location: '',
-          required_skills: [],
-          max_volunteers: '',
-          status: 'active'
-        });
-        
-        // Navigate to events page
-        navigate('/dashboard/events');
+        const response = await api.post('/api/events', formattedData);
+
+        if (response.data.success) {
+          alert('Event created successfully!');
+          navigate('/dashboard/events');
+        }
       } catch (error) {
         console.error('Error creating event:', error);
-        setError(typeof error === 'string' ? error : 'Failed to create event. Please try again.');
+        alert(error.response?.data?.message || 'Failed to create event. Please try again.');
       } finally {
         setLoading(false);
       }
@@ -117,19 +126,21 @@ const CreateEventForm = () => {
     }));
   };
 
-  return (
-    <form onSubmit={handleSubmit} className={styles.createEventForm}>
-      <h2 className={styles.formTitle}>Create New Event</h2>
-      
-      {error && (
-        <div className={styles.errorAlert}>
-          {error}
-        </div>
-      )}
+  const handleCancel = () => {
+    navigate('/dashboard/events');
+  };
 
-      <div className={styles.formSection}>
+  return (
+    <div className={styles.formContainer}>
+      <div className={styles.formHeader}>
+        <h1 className={styles.formTitle}>Create New Event</h1>
+        <p className={styles.formSubtitle}>Fill in the details below to create a new volunteer event</p>
+      </div>
+
+      <form onSubmit={handleSubmit} className={styles.formSection}>
+        {/* Title */}
         <div className={styles.formGroup}>
-          <label htmlFor="title">Event Title *</label>
+          <label htmlFor="title">Title *</label>
           <input
             type="text"
             id="title"
@@ -139,11 +150,11 @@ const CreateEventForm = () => {
             className={errors.title ? styles.inputError : ''}
             placeholder="Enter event title"
             maxLength="255"
-            disabled={loading}
           />
           {errors.title && <span className={styles.errorText}>{errors.title}</span>}
         </div>
 
+        {/* Description */}
         <div className={styles.formGroup}>
           <label htmlFor="description">Description *</label>
           <textarea
@@ -154,11 +165,11 @@ const CreateEventForm = () => {
             className={errors.description ? styles.inputError : ''}
             placeholder="Describe the event"
             rows="4"
-            disabled={loading}
           />
           {errors.description && <span className={styles.errorText}>{errors.description}</span>}
         </div>
 
+        {/* Start Date */}
         <div className={styles.formGroup}>
           <label htmlFor="start_date">Start Date and Time *</label>
           <input
@@ -169,11 +180,11 @@ const CreateEventForm = () => {
             onChange={handleChange}
             className={errors.start_date ? styles.inputError : ''}
             min={new Date().toISOString().slice(0, 16)}
-            disabled={loading}
           />
           {errors.start_date && <span className={styles.errorText}>{errors.start_date}</span>}
         </div>
 
+        {/* End Date */}
         <div className={styles.formGroup}>
           <label htmlFor="end_date">End Date and Time *</label>
           <input
@@ -184,11 +195,11 @@ const CreateEventForm = () => {
             onChange={handleChange}
             className={errors.end_date ? styles.inputError : ''}
             min={eventData.start_date || new Date().toISOString().slice(0, 16)}
-            disabled={loading}
           />
           {errors.end_date && <span className={styles.errorText}>{errors.end_date}</span>}
         </div>
 
+        {/* Location */}
         <div className={styles.formGroup}>
           <label htmlFor="location">Location *</label>
           <input
@@ -200,11 +211,11 @@ const CreateEventForm = () => {
             className={errors.location ? styles.inputError : ''}
             placeholder="Enter event location"
             maxLength="255"
-            disabled={loading}
           />
           {errors.location && <span className={styles.errorText}>{errors.location}</span>}
         </div>
 
+        {/* Maximum Volunteers */}
         <div className={styles.formGroup}>
           <label htmlFor="max_volunteers">Maximum Volunteers *</label>
           <input
@@ -216,11 +227,11 @@ const CreateEventForm = () => {
             className={errors.max_volunteers ? styles.inputError : ''}
             min="1"
             max="1000"
-            disabled={loading}
           />
           {errors.max_volunteers && <span className={styles.errorText}>{errors.max_volunteers}</span>}
         </div>
 
+        {/* Required Skills */}
         <div className={styles.formGroup}>
           <label>Required Skills</label>
           <div className={styles.skillsGrid}>
@@ -231,25 +242,55 @@ const CreateEventForm = () => {
                   id={`skill-${skill}`}
                   checked={eventData.required_skills.includes(skill)}
                   onChange={() => handleSkillToggle(skill)}
-                  disabled={loading}
                 />
                 <label htmlFor={`skill-${skill}`}>{skill}</label>
               </div>
             ))}
           </div>
         </div>
-      </div>
 
-      <div className={styles.formActions}>
-        <button 
-          type="submit" 
-          className={styles.submitButton}
-          disabled={loading}
-        >
-          {loading ? 'Creating Event...' : 'Create Event'}
-        </button>
-      </div>
-    </form>
+        {/* Status */}
+        <div className={styles.formGroup}>
+          <label htmlFor="status">Status</label>
+          <select
+            id="status"
+            name="status"
+            value={eventData.status}
+            onChange={handleChange}
+          >
+            {statusOptions.map(option => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Form Actions */}
+        <div className={styles.formActions}>
+          <button 
+            type="button" 
+            className={styles.cancelButton}
+            onClick={handleCancel}
+          >
+            Cancel
+          </button>
+          <button 
+            type="submit" 
+            className={styles.submitButton}
+            disabled={loading}
+          >
+            {loading ? 'Creating...' : 'Create Event'}
+          </button>
+        </div>
+      </form>
+
+      {loading && (
+        <div className={styles.loadingOverlay}>
+          <div className={styles.loader}></div>
+        </div>
+      )}
+    </div>
   );
 };
 

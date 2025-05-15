@@ -6,7 +6,7 @@ import { eventService } from '../../services/eventService';
 
 // Event card component with improved visual design
 const EventCard = ({ event, onJoinEvent, onViewDetails }) => {
-  const formattedDate = new Date(event.date).toLocaleDateString('en-US', {
+  const formattedDate = new Date(event.start_date).toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
@@ -368,33 +368,34 @@ const CreateEventForm = () => {
 
 // Stats card component for overview section
 const StatCard = ({ title, value, icon, trend }) => (
-  <div className={styles.statsCard}>
-    <div className={styles.statHeader}>
-      <span className={styles.statIcon}>{icon}</span>
+  <div className={styles.statCard}>
+    <div className={styles.statIcon}>{icon}</div>
+    <div className={styles.statContent}>
       <h3 className={styles.statTitle}>{title}</h3>
+      <p className={styles.statValue}>{value}</p>
+      {trend && (
+        <span className={`${styles.statTrend} ${trend > 0 ? styles.positive : styles.negative}`}>
+          {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
+        </span>
+      )}
     </div>
-    <p className={styles.statValue}>{value}</p>
-    {trend && (
-      <p className={`${styles.statTrend} ${trend > 0 ? styles.trendUp : styles.trendDown}`}>
-        {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}% from last month
-      </p>
-    )}
   </div>
 );
 
 // Main Dashboard component
 const Dashboard = ({ user, onLogout }) => {
   const [stats, setStats] = useState({
-    total_events: 0,
-    events_joined: 0,
-    hours_contributed: 0,
-    upcoming_events: 0
+    totalEvents: 0,
+    activeEvents: 0,
+    completedEvents: 0,
+    totalVolunteers: 0
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [events, setEvents] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
-  const [eventFilter, setEventFilter] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
   const navigate = useNavigate();
 
   // Parse user skills if they're stored as a JSON string
@@ -418,6 +419,7 @@ const Dashboard = ({ user, onLogout }) => {
 
   useEffect(() => {
     fetchDashboardData();
+    fetchEvents();
   }, []);
 
   const fetchDashboardData = async () => {
@@ -427,10 +429,10 @@ const Dashboard = ({ user, onLogout }) => {
 
       // Use mock data while API is being set up
       const mockStats = {
-        total_events: 5,
-        events_joined: 3,
-        hours_contributed: 12,
-        upcoming_events: 2
+        totalEvents: 5,
+        activeEvents: 3,
+        completedEvents: 2,
+        totalVolunteers: 12
       };
 
       setStats(mockStats);
@@ -450,20 +452,35 @@ const Dashboard = ({ user, onLogout }) => {
     }
   };
 
+  const fetchEvents = async () => {
+    try {
+      const response = await api.get('/api/events');
+      if (response.data.success) {
+        setEvents(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching events:', error);
+      setError('Failed to load events. Please try again.');
+    }
+  };
+
   const handleLogout = () => {
     onLogout();
     navigate('/login');
   };
 
-  const handleJoinEvent = (eventId) => {
-    console.log(`Joining event with ID: ${eventId}`);
-    // Add API call to join event
+  const handleJoinEvent = async (eventId) => {
+    try {
+      await api.post(`/api/events/${eventId}/join`);
+      fetchDashboardData(); // Refresh data
+    } catch (error) {
+      console.error('Error joining event:', error);
+      alert(error.response?.data?.message || 'Failed to join event');
+    }
   };
 
   const handleViewEventDetails = (eventId) => {
-    console.log(`Viewing details for event with ID: ${eventId}`);
-    // Navigate to event details page
-    // navigate(`/events/${eventId}`);
+    navigate(`/dashboard/events/${eventId}`);
   };
 
   const handleCreateEvent = async (eventData) => {
@@ -482,22 +499,22 @@ const Dashboard = ({ user, onLogout }) => {
     }
   };
 
-  const filterEvents = () => {
-    const now = new Date();
-    
-    if (eventFilter === 'my-events') {
-      return events.filter(event => event.organizer_id === user.id || event.participants?.includes(user.id));
-    } else if (eventFilter === 'upcoming') {
-      return events.filter(event => new Date(event.date) > now && event.status !== 'completed');
-    } else {
-      return events;
-    }
+  const filteredEvents = events.filter(event => {
+    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         event.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || event.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleCreateEventClick = () => {
+    navigate('/dashboard/create-event');
   };
 
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
-        <div className={styles.loadingSpinner}></div>
+        <div className={styles.loader}></div>
+        <p>Loading dashboard...</p>
       </div>
     );
   }
@@ -522,12 +539,10 @@ const Dashboard = ({ user, onLogout }) => {
     <div className={styles.dashboardContainer}>
       {/* Sidebar */}
       <aside className={styles.sidebar}>
-        <div className={styles.logoContainer}>
-          <div className={styles.logo}>VoloConnect</div>
-          <div className={styles.tagline}>Make a Difference</div>
+        <div className={styles.sidebarHeader}>
+          <h2>VoloConnect</h2>
         </div>
-        
-        <nav className={styles.navigation}>
+        <nav className={styles.sidebarNav}>
           <button 
             className={`${styles.navItem} ${activeTab === 'overview' ? styles.active : ''}`}
             onClick={() => setActiveTab('overview')}
@@ -536,19 +551,16 @@ const Dashboard = ({ user, onLogout }) => {
             Overview
           </button>
           <button 
-            className={`${styles.navItem} ${activeTab === 'events' ? styles.active : ''}`}
-            onClick={() => setActiveTab('events')}
-          >
-            <span className={styles.navIcon}>📅</span>
-            Events
-          </button>
-          <button 
-            className={`${styles.navItem} ${activeTab === 'create-event' ? styles.active : ''}`}
-            onClick={() => setActiveTab('create-event')}
-          >
-            <span className={styles.navIcon}>➕</span>
-            Create Event
-          </button>
+  className={`${styles.navItem} ${activeTab === 'events' ? styles.active : ''}`}
+  onClick={() => {
+    setActiveTab('events');
+    navigate('/events');
+  }}
+>
+  <span className={styles.navIcon}>📅</span>
+  Events
+</button>
+
           <button 
             className={`${styles.navItem} ${activeTab === 'profile' ? styles.active : ''}`}
             onClick={() => setActiveTab('profile')}
@@ -557,229 +569,178 @@ const Dashboard = ({ user, onLogout }) => {
             Profile
           </button>
         </nav>
-        
         <div className={styles.sidebarFooter}>
-          <button className={styles.helpButton}>
-            <span className={styles.helpIcon}>❓</span>
-            Help & Resources
+          <button className={styles.logoutButton} onClick={handleLogout}>
+            <span className={styles.navIcon}>🚪</span>
+            Logout
           </button>
         </div>
       </aside>
 
       {/* Main Content */}
       <main className={styles.mainContent}>
+        {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <h1 className={styles.pageTitle}>
-              {activeTab === 'overview' ? 'Dashboard Overview' :
-               activeTab === 'events' ? 'Volunteer Events' :
-               activeTab === 'create-event' ? 'Create New Event' :
-               activeTab === 'profile' ? 'My Profile' : ''}
-            </h1>
+            <h1>Welcome back, {user?.first_name}!</h1>
+            <p className={styles.date}>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
           <div className={styles.headerRight}>
-            <div className={styles.notifications}>
-              <span className={styles.notificationIcon}>🔔</span>
-              <span className={styles.notificationBadge}>3</span>
+            <div className={styles.searchBar}>
+              <input
+                type="text"
+                placeholder="Search events..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+              <span className={styles.searchIcon}>🔍</span>
             </div>
-            <div className={styles.userInfo}>
-              <div className={styles.userAvatar}>
-                {user.first_name?.charAt(0)}{user.last_name?.charAt(0)}
-              </div>
-              <div className={styles.userDetails}>
-                <span className={styles.userName}>{user.first_name} {user.last_name}</span>
-                <span className={styles.userOrg}>{user.organization || 'Volunteer'}</span>
-              </div>
+            <div className={styles.userMenu}>
+              <img src={`https://ui-avatars.com/api/?name=${user?.first_name}+${user?.last_name}`} alt="Profile" className={styles.avatar} />
+              <span className={styles.userName}>{user?.first_name} {user?.last_name}</span>
             </div>
-            <button className={styles.logoutButton} onClick={handleLogout}>
-              Logout
-            </button>
           </div>
         </header>
 
-        {/* Dashboard Content */}
+        {/* Content Area */}
         <div className={styles.content}>
           {activeTab === 'overview' && (
-            <div className={styles.overviewContent}>
-              <div className={styles.welcomeMessage}>
-                <h2>Welcome back, {user.first_name}!</h2>
-                <p>Here's a summary of your volunteer impact so far.</p>
+            <>
+              {/* Stats Section */}
+              <div className={styles.statsGrid}>
+                <StatCard
+                  title="Total Events"
+                  value={stats.totalEvents}
+                  icon="📊"
+                  trend={5}
+                />
+                <StatCard
+                  title="Active Events"
+                  value={stats.activeEvents}
+                  icon="🎯"
+                  trend={2}
+                />
+                <StatCard
+                  title="Completed Events"
+                  value={stats.completedEvents}
+                  icon="✅"
+                  trend={-1}
+                />
+                <StatCard
+                  title="Total Volunteers"
+                  value={stats.totalVolunteers}
+                  icon="👥"
+                  trend={8}
+                />
               </div>
-              
-              <div className={styles.overviewGrid}>
-                <StatCard 
-                  title="Total Events" 
-                  value={stats.total_events} 
-                  icon="📅" 
-                />
-                <StatCard 
-                  title="Events Joined" 
-                  value={stats.events_joined} 
-                  icon="👥" 
-                />
-                <StatCard 
-                  title="Hours Contributed" 
-                  value={stats.hours_contributed} 
-                  icon="⏱️" 
-                />
-                <StatCard 
-                  title="Upcoming Events" 
-                  value={stats.upcoming_events} 
-                  icon="🟢" 
-                />
-              </div>
-              
-              <div className={styles.recentActivity}>
+
+              {/* Events Section */}
+              <section className={styles.eventsSection}>
                 <div className={styles.sectionHeader}>
-                  <h2 className={styles.sectionTitle}>Recent Activity</h2>
-                  <button className={styles.seeAllButton}>See All</button>
+                  <h2>Upcoming Events</h2>
+                  <div className={styles.filterButtons}>
+                    <button
+                      className={`${styles.filterButton} ${filterStatus === 'all' ? styles.active : ''}`}
+                      onClick={() => setFilterStatus('all')}
+                    >
+                      All
+                    </button>
+                    <button
+                      className={`${styles.filterButton} ${filterStatus === 'active' ? styles.active : ''}`}
+                      onClick={() => setFilterStatus('active')}
+                    >
+                      Active
+                    </button>
+                    <button
+                      className={`${styles.filterButton} ${filterStatus === 'upcoming' ? styles.active : ''}`}
+                      onClick={() => setFilterStatus('upcoming')}
+                    >
+                      Upcoming
+                    </button>
+                  </div>
                 </div>
-                
-                <div className={styles.activityTimeline}>
-                  {events.slice(0, 3).map((event, index) => (
-                    <div key={index} className={styles.activityItem}>
-                      <div className={styles.activityIcon}>
-                        {event.status === 'active' ? '🔵' : 
-                         event.status === 'upcoming' ? '🟢' : 
-                         event.status === 'full' ? '🟠' : '✅'}
-                      </div>
-                      <div className={styles.activityContent}>
-                        <h4 className={styles.activityTitle}>{event.title}</h4>
-                        <p className={styles.activityDate}>
-                          {new Date(event.date).toLocaleDateString('en-US', {
-                            weekday: 'long',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </p>
-                      </div>
-                      <button 
-                        className={styles.activityAction}
-                        onClick={() => handleViewEventDetails(event.id)}
-                      >
-                        View
-                      </button>
-                    </div>
+                <div className={styles.eventsGrid}>
+                  {filteredEvents.slice(0, 6).map(event => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      onJoinEvent={handleJoinEvent}
+                      onViewDetails={handleViewEventDetails}
+                    />
                   ))}
                 </div>
-              </div>
-            </div>
+              </section>
+            </>
           )}
-          
+
           {activeTab === 'events' && (
-            <div className={styles.eventsContainer}>
-              <div className={styles.eventsHeader}>
-                <div className={styles.eventsFilter}>
-                  <button 
-                    className={`${styles.filterButton} ${eventFilter === 'all' ? styles.active : ''}`}
-                    onClick={() => setEventFilter('all')}
-                  >
-                    All Events
-                  </button>
-                  <button 
-                    className={`${styles.filterButton} ${eventFilter === 'my-events' ? styles.active : ''}`}
-                    onClick={() => setEventFilter('my-events')}
-                  >
-                    My Events
-                  </button>
-                  <button 
-                    className={`${styles.filterButton} ${eventFilter === 'upcoming' ? styles.active : ''}`}
-                    onClick={() => setEventFilter('upcoming')}
-                  >
-                    Upcoming
-                  </button>
-                </div>
+            <section className={styles.allEventsSection}>
+              <div className={styles.sectionHeader}>
+                <h2>All Events</h2>
                 <button 
                   className={styles.createEventButton}
-                  onClick={() => setActiveTab('create-event')}
+                  onClick={handleCreateEventClick}
                 >
                   <span className={styles.buttonIcon}>+</span>
-                  Create Event
+                  Create New Event
                 </button>
               </div>
-              
-              <div className={styles.eventsList}>
-                {filterEvents().length > 0 ? (
-                  filterEvents().map(event => (
-                    <EventCard 
-                      key={event.id} 
-                      event={event} 
+              <div className={styles.eventsGrid}>
+                {loading ? (
+                  <div className={styles.loadingContainer}>
+                    <div className={styles.loader}></div>
+                    <p>Loading events...</p>
+                  </div>
+                ) : error ? (
+                  <div className={styles.errorContainer}>
+                    <p className={styles.errorMessage}>{error}</p>
+                    <button 
+                      onClick={fetchEvents}
+                      className={styles.retryButton}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : filteredEvents.length === 0 ? (
+                  <div className={styles.noEvents}>
+                    <p>No events found</p>
+                  </div>
+                ) : (
+                  filteredEvents.map(event => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
                       onJoinEvent={handleJoinEvent}
                       onViewDetails={handleViewEventDetails}
                     />
                   ))
-                ) : (
-                  <div className={styles.noEvents}>
-                    <div className={styles.noEventsIcon}>🔍</div>
-                    <h3>No events found</h3>
-                    <p>No events match your current filter. Try changing filters or create your own event!</p>
-                    <button 
-                      className={styles.createEventButton}
-                      onClick={() => setActiveTab('create-event')}
-                    >
-                      Create New Event
-                    </button>
-                  </div>
                 )}
               </div>
-            </div>
+            </section>
           )}
-          
-          {activeTab === 'create-event' && (
-            <div className={styles.createEventContainer}>
-              <CreateEventForm />
-            </div>
-          )}
-          
-          {activeTab === 'profile' && (
-            <div className={styles.profileContainer}>
-              <div className={styles.profileHeader}>
-                <div className={styles.profileBanner}></div>
-                <div className={styles.profileMainInfo}>
-                  <div className={styles.profileAvatarLarge}>
-                    {user.first_name.charAt(0)}{user.last_name.charAt(0)}
-                  </div>
-                  <div className={styles.profileNameInfo}>
-                    <h2 className={styles.profileName}>{user.first_name} {user.last_name}</h2>
-                    <p className={styles.profileOrg}>{user.organization || 'Individual Volunteer'}</p>
-                    <div className={styles.profileBadges}>
-                      <span className={styles.profileBadge}>Verified Volunteer</span>
-                      {stats.total_events > 10 && (
-                        <span className={styles.profileBadge}>Dedicated Member</span>
-                      )}
-                      {stats.hours_contributed > 40 && (
-                        <span className={styles.profileBadge}>Impact Maker</span>
-                      )}
-                    </div>
-                  </div>
-                  <button className={styles.editProfileButton}>
-                    Edit Profile
-                  </button>
-                </div>
-              </div>
-              
-              <div className={styles.profileContent}>
-                <div className={styles.profileGrid}>
-                  <div className={styles.profileCard}>
-                    <h3 className={styles.profileSectionTitle}>Contact Information</h3>
-                    <div className={styles.profileField}>
-                      <span className={styles.fieldLabel}>Email</span>
-                      <span className={styles.fieldValue}>{user.email || 'email@example.com'}</span>
-                    </div>
-                    <div className={styles.profileField}>
-                      <span className={styles.fieldLabel}>Phone</span>
-                      <span className={styles.fieldValue}>{user.phone || '(555) 123-4567'}</span>
-                    </div>
-                    <div className={styles.profileField}>
-                      <span className={styles.fieldLabel}>Location</span>
-                      <span className={styles.fieldValue}>
-                        {user.city || 'San Francisco'}, {user.state || 'CA'}
-                      </span>
-                    </div>
-                  </div>
 
-                  <div className={styles.profileCard}>
-                    <h3 className={styles.profileSectionTitle}>Skills & Interests</h3>
+          {activeTab === 'profile' && (
+            <section className={styles.profileSection}>
+              <div className={styles.profileCard}>
+                <div className={styles.profileHeader}>
+                  <img
+                    src={`https://ui-avatars.com/api/?name=${user?.first_name}+${user?.last_name}&size=128`}
+                    alt="Profile"
+                    className={styles.profileAvatar}
+                  />
+                  <div className={styles.profileInfo}>
+                    <h2>{user?.first_name} {user?.last_name}</h2>
+                    <p className={styles.profileEmail}>{user?.email}</p>
+                    <p className={styles.profileOrg}>{user?.organization}</p>
+                  </div>
+                </div>
+                <div className={styles.profileDetails}>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Phone</span>
+                    <span className={styles.detailValue}>{user?.phone}</span>
+                  </div>
+                  <div className={styles.detailItem}>
+                    <span className={styles.detailLabel}>Skills</span>
                     <div className={styles.skillsList}>
                       {userSkills.map((skill, index) => (
                         <span key={index} className={styles.skillTag}>
@@ -787,79 +748,10 @@ const Dashboard = ({ user, onLogout }) => {
                         </span>
                       ))}
                     </div>
-                    <div className={styles.interestsList}>
-                      <h4 className={styles.subsectionTitle}>Interests</h4>
-                      {(user.interests || ['Environmental', 'Education', 'Community Development']).map(interest => (
-                        <span key={interest} className={styles.interestTag}>{interest}</span>
-                      ))}
-                    </div>
-                  </div>
-
-                  <div className={styles.profileCard}>
-                    <h3 className={styles.profileSectionTitle}>Volunteer Statistics</h3>
-                    <div className={styles.statsGrid}>
-                      <div className={styles.statItem}>
-                        <span className={styles.statLabel}>Total Hours</span>
-                        <span className={styles.statValueLarge}>{stats.hours_contributed}</span>
-                      </div>
-                      <div className={styles.statItem}>
-                        <span className={styles.statLabel}>Events Completed</span>
-                        <span className={styles.statValueLarge}>{stats.total_events}</span>
-                      </div>
-                      <div className={styles.statItem}>
-                        <span className={styles.statLabel}>Impact Score</span>
-                        <span className={styles.statValueLarge}>{stats.hours_contributed * 10}</span>
-                      </div>
-                      <div className={styles.statItem}>
-                        <span className={styles.statLabel}>Skills Used</span>
-                        <span className={styles.statValueLarge}>{stats.events_joined}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className={styles.profileCard}>
-                    <h3 className={styles.profileSectionTitle}>Upcoming Events</h3>
-                    {events.filter(event => 
-                      new Date(event.date) > new Date() && 
-                      event.status !== 'completed'
-                    ).slice(0, 2).map(event => (
-                      <div key={event.id} className={styles.upcomingEvent}>
-                        <h4 className={styles.upcomingEventTitle}>{event.title}</h4>
-                        <p className={styles.upcomingEventDate}>
-                          {new Date(event.date).toLocaleDateString('en-US', {
-                            weekday: 'short',
-                            month: 'short',
-                            day: 'numeric',
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </p>
-                        <button 
-                          className={styles.viewEventButton}
-                          onClick={() => handleViewEventDetails(event.id)}
-                        >
-                          View Event
-                        </button>
-                      </div>
-                    ))}
-                    {events.filter(event => 
-                      new Date(event.date) > new Date() && 
-                      event.status !== 'completed'
-                    ).length === 0 && (
-                      <div className={styles.noUpcomingEvents}>
-                        <p>No upcoming events. Browse events to sign up!</p>
-                        <button 
-                          className={styles.browseEventsButton}
-                          onClick={() => setActiveTab('events')}
-                        >
-                          Browse Events
-                        </button>
-                      </div>
-                    )}
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           )}
         </div>
       </main>

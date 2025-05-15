@@ -7,6 +7,7 @@ const LandingPage = () => {
       <nav className={styles.navbar}>
         <div className={styles.logo}>VoloConnect</div>
         <div className={styles.navLinks}>
+          <Link to="/events" className={styles.navButton}>Events</Link>
           <Link to="/login" className={styles.navButton}>Login</Link>
           <Link to="/register" className={`${styles.navButton} ${styles.primaryButton}`}>Sign Up</Link>
         </div>

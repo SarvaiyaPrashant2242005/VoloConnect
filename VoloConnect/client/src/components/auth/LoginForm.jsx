@@ -49,25 +49,15 @@ const LoginForm = ({ onLogin }) => {
 
     try {
       const response = await api.post('/api/auth/login', formData);
-      if (response.data.success) {
-        // Make sure skills are properly formatted before storing
-        const user = {
-          ...response.data.user,
-          skills: Array.isArray(response.data.user.skills) 
-            ? response.data.user.skills 
-            : JSON.parse(response.data.user.skills || '[]')
-        };
-        
-        // Store user data
-        sessionStorage.setItem('userId', user.id);
-        sessionStorage.setItem('user', JSON.stringify(user));
-        
-        // Navigate to dashboard
-        navigate('/dashboard');
-      }
+      
+      // Call the onLogin callback with the user data
+      onLogin(response.data.user);
+      
+      // Navigate to dashboard
+      navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      alert(error.response?.data?.message || 'Login failed');
+      setError(error.response?.data?.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

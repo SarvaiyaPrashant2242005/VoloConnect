@@ -1,0 +1,110 @@
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { Card, CardContent, Typography, Grid, Container, Box, Chip } from '@mui/material';
+import { format } from 'date-fns';
+
+const Events = () => {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const response = await axios.get('http://localhost:3001/api/events');
+        setEvents(response.data);
+        setLoading(false);
+      } catch (err) {
+        setError('Failed to fetch events');
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
+  if (loading) {
+    return (
+      <Container>
+        <Typography variant="h5" align="center" sx={{ mt: 4 }}>
+          Loading events...
+        </Typography>
+      </Container>
+    );
+  }
+
+  if (error) {
+    return (
+      <Container>
+        <Typography variant="h5" color="error" align="center" sx={{ mt: 4 }}>
+          {error}
+        </Typography>
+      </Container>
+    );
+  }
+
+  return (
+    <Container sx={{ py: 4 }}>
+      <Typography variant="h4" component="h1" gutterBottom align="center">
+        Upcoming Events
+      </Typography>
+      <Grid container spacing={3}>
+        {events.map((event) => (
+          <Grid item key={event.id} xs={12} sm={6} md={4}>
+            <Card 
+              sx={{ 
+                height: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                transition: 'transform 0.2s',
+                '&:hover': {
+                  transform: 'scale(1.02)',
+                  boxShadow: 3
+                }
+              }}
+            >
+              <CardContent>
+                <Typography variant="h5" component="h2" gutterBottom>
+                  {event.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary" paragraph>
+                  {event.description}
+                </Typography>
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    📍 {event.location}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    🗓️ {format(new Date(event.start_date), 'MMM dd, yyyy')}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    ⏰ {format(new Date(event.start_date), 'hh:mm a')} - {format(new Date(event.end_date), 'hh:mm a')}
+                  </Typography>
+                </Box>
+                <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                  <Chip 
+                    label={event.status} 
+                    color={event.status === 'active' ? 'success' : 'default'}
+                    size="small"
+                  />
+                  <Chip 
+                    label={`${event.max_volunteers} volunteers needed`}
+                    variant="outlined"
+                    size="small"
+                  />
+                </Box>
+                {event.organizer_email && (
+                  <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
+                    Organized by: {event.first_name} {event.last_name}
+                  </Typography>
+                )}
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
+      </Grid>
+    </Container>
+  );
+};
+
+export default Events; 
