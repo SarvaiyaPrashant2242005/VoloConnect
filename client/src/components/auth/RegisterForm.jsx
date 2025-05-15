@@ -38,6 +38,8 @@ const RegisterForm = ({ onLogin }) => {
     phone: '',
     skills: [],
   });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState({
     first_name: '',
     last_name: '',
@@ -231,6 +233,14 @@ const RegisterForm = ({ onLogin }) => {
     }
   };
 
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const toggleConfirmPasswordVisibility = () => {
+    setShowConfirmPassword(!showConfirmPassword);
+  };
+
   return (
     <div className={styles.formContainer}>
       <h2 className={styles.title}>Create Account</h2>
@@ -282,28 +292,46 @@ const RegisterForm = ({ onLogin }) => {
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
             <label htmlFor="password">Password</label>
-            <input
-              type="password"
-              id="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
-              placeholder="Enter your password"
-            />
+            <div className={styles.passwordInputContainer}>
+              <input
+                type={showPassword ? "text" : "password"}
+                id="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
+                placeholder="Enter your password"
+              />
+              <button
+                type="button"
+                onClick={togglePasswordVisibility}
+                className={styles.passwordToggle}
+              >
+                {showPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
             {errors.password && <div className={styles.fieldError}>{errors.password}</div>}
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="confirmPassword">Confirm Password</label>
-            <input
-              type="password"
-              id="confirmPassword"
-              name="confirmPassword"
-              value={formData.confirmPassword}
-              onChange={handleChange}
-              className={`${styles.input} ${errors.confirmPassword ? styles.inputError : ''}`}
-              placeholder="Confirm your password"
-            />
+            <div className={styles.passwordInputContainer}>
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                id="confirmPassword"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                className={`${styles.input} ${errors.confirmPassword ? styles.inputError : ''}`}
+                placeholder="Confirm your password"
+              />
+              <button
+                type="button"
+                onClick={toggleConfirmPasswordVisibility}
+                className={styles.passwordToggle}
+              >
+                {showConfirmPassword ? "👁️" : "👁️‍🗨️"}
+              </button>
+            </div>
             {errors.confirmPassword && <div className={styles.fieldError}>{errors.confirmPassword}</div>}
           </div>
         </div>
