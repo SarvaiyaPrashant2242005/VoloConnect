@@ -167,7 +167,7 @@ const CreateEventForm = () => {
         };
 
         // Update the API endpoint to match your server
-        const response = await api.post('/voloconnect/events', formattedData);
+        const response = await api.post('/api/events', formattedData);
 
         if (response.data.success) {
           alert('Event created successfully!');
@@ -468,27 +468,17 @@ const Dashboard = ({ user, onLogout }) => {
 
   const handleCreateEvent = async (eventData) => {
     try {
-      console.log('Creating event:', eventData);
-      // Call API to create event
-      // const response = await api.post('/voloconnect/events', eventData);
+      const result = await eventService.createEvent(eventData);
+      
+      // Update events list with new event
+      setEvents(prev => [result.data, ...prev]);
       
       // Show success message and navigate to events
       alert('Event created successfully!');
       setActiveTab('events');
-      
-      // Update events list with new event
-      setEvents(prev => [
-        {
-          id: Date.now(), // Temporary ID until API response
-          ...eventData,
-          current_volunteers: 0,
-          status: 'upcoming'
-        },
-        ...prev
-      ]);
     } catch (error) {
       console.error('Error creating event:', error);
-      alert('Failed to create event. Please try again.');
+      alert(error.message || 'Failed to create event. Please try again.');
     }
   };
 

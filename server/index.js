@@ -3,20 +3,20 @@ const express = require('express');
 const app = express();
 const authRoutes = require('./routes/auth');
 const eventsRoutes = require('./routes/events');
+const volunteerRoutes = require('./routes/volunteers');
 const cors = require('cors');
 require('dotenv').config();
 
 // Middleware
 app.use(express.json());
-app.use(cors());
 
 // CORS configuration
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-production-domain.com'] // Replace with your production domain
-    : ['http://localhost:5173', 'http://127.0.0.1:5173'], // Vite's default development ports
+    ? ['https://your-production-domain.com'] 
+    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'user-id'],
   credentials: true,
   maxAge: 86400 // 24 hours
 };
@@ -24,14 +24,18 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 // Routes
-app.use('/voloconnect/auth', authRoutes);
-app.use('/voloconnect/events', eventsRoutes);
+app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/auth', authRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ message: 'Something went wrong!' });
+  res.status(500).json({
+    success: false,
+    message: 'Something went wrong!',
+    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+  });
 });
 
 const PORT = process.env.PORT || 3001;
