@@ -26,7 +26,6 @@ const EventDetail = () => {
     const fetchEventDetails = async () => {
       try {
         const response = await api.get(`/api/events/${eventId}`);
-        console.log('Event details:', response.data);
         setEvent(response.data);
         setLoading(false);
       } catch (err) {
@@ -231,7 +230,6 @@ const Events = () => {
     const fetchEvents = async () => {
       try {
         const response = await api.get('/api/events');
-        console.log('API response for events:', response.data);
         // Ensure that we have an array, even if the API returns something else
         setEvents(Array.isArray(response.data) ? response.data : []);
         setLoading(false);
