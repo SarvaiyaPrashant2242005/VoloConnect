@@ -228,7 +228,8 @@ const Dashboard = ({ user, onLogout }) => {
   };
 
   const handleViewEventDetails = (eventId) => {
-    navigate(`/dashboard/events/${eventId}`);
+    console.log('Viewing event details for ID:', eventId);
+    navigate(`/events/${eventId}`);
   };
 
   const handleCreateEvent = async (eventData) => {

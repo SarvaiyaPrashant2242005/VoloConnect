@@ -5,7 +5,7 @@ import Dashboard from './components/dashboard/dashboard'
 import LoginForm from './components/auth/LoginForm'
 import RegisterForm from './components/auth/RegisterForm'
 import CreateEvent from './components/dashboard/CreateEvent'
-import Events from './components/Events'
+import Events, { EventDetail } from './components/Events'
 import VolunteerSignup from './components/volunteer/VolunteerSignup'
 import VolunteerHistory from './components/volunteer/VolunteerHistory'
 import VolunteerManagement from './components/volunteer/VolunteerManagement'
@@ -89,6 +89,7 @@ const App = () => {
         <Routes>
           <Route path="/" element={<LandingPage />} />
           <Route path="/events" element={<Events />} />
+          <Route path="/events/:eventId" element={<EventDetail />} />
           <Route
             path="/login"
             element={
