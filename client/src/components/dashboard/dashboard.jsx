@@ -7,7 +7,7 @@ import CreateEvent from './CreateEvent';
 import { Button } from '@mui/material';
 
 // Event card component with improved visual design
-const EventCard = ({ event, onJoinEvent, onViewDetails }) => {
+const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser }) => {
   const formattedDate = new Date(event.start_date).toLocaleDateString('en-US', {
     weekday: 'short',
     month: 'short',
@@ -25,6 +25,9 @@ const EventCard = ({ event, onJoinEvent, onViewDetails }) => {
       default: return '';
     }
   };
+
+  // Check if current user is the organizer
+  const isOrganizer = currentUser && event.organizer_id === currentUser.id;
 
   return (
     <div className={styles.eventCard}>
@@ -72,14 +75,24 @@ const EventCard = ({ event, onJoinEvent, onViewDetails }) => {
         >
           View Details
         </button>
-        <button 
-          className={`${styles.actionButton} ${styles.primaryButton}`}
-          onClick={() => onJoinEvent(event.id)}
-          disabled={event.status === 'full' || event.status === 'completed'}
-        >
-          {event.status === 'full' ? 'Event Full' : 
-           event.status === 'completed' ? 'Completed' : 'Join Event'}
-        </button>
+        
+        {isOrganizer ? (
+          <button 
+            className={`${styles.actionButton} ${styles.secondaryButton}`}
+            onClick={() => onEditEvent(event.id)}
+          >
+            Edit Event
+          </button>
+        ) : (
+          <button 
+            className={`${styles.actionButton} ${styles.primaryButton}`}
+            onClick={() => onJoinEvent(event.id)}
+            disabled={event.status === 'full' || event.status === 'completed'}
+          >
+            {event.status === 'full' ? 'Event Full' : 
+             event.status === 'completed' ? 'Completed' : 'Join Event'}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -239,7 +252,12 @@ const Dashboard = ({ user, onLogout }) => {
 
   const handleJoinEvent = async (eventId) => {
     try {
-      await api.post(`/api/events/${eventId}/join`);
+      await api.post(`/api/events/${eventId}/volunteer`, {
+        availableHours: "Flexible hours",
+        specialNeeds: "",
+        notes: "Joining from dashboard",
+        skills: JSON.stringify(["General Help"])
+      });
       fetchDashboardData(); // Refresh data
     } catch (error) {
       console.error('Error joining event:', error);
@@ -250,6 +268,11 @@ const Dashboard = ({ user, onLogout }) => {
   const handleViewEventDetails = (eventId) => {
     console.log('Viewing event details for ID:', eventId);
     navigate(`/events/${eventId}`);
+  };
+
+  const handleEditEvent = (eventId) => {
+    console.log('Editing event:', eventId);
+    navigate(`/events/${eventId}/edit`);
   };
 
   const handleCreateEvent = async (eventData) => {
@@ -454,6 +477,8 @@ const Dashboard = ({ user, onLogout }) => {
                       event={event}
                       onJoinEvent={handleJoinEvent}
                       onViewDetails={handleViewEventDetails}
+                      onEditEvent={handleEditEvent}
+                      currentUser={user}
                     />
                   ))}
                 </div>
@@ -509,6 +534,8 @@ const Dashboard = ({ user, onLogout }) => {
                       event={event}
                       onJoinEvent={handleJoinEvent}
                       onViewDetails={handleViewEventDetails}
+                      onEditEvent={handleEditEvent}
+                      currentUser={user}
                     />
                   ))
                 )}
@@ -561,6 +588,8 @@ const Dashboard = ({ user, onLogout }) => {
                       event={event}
                       onJoinEvent={handleJoinEvent}
                       onViewDetails={handleViewEventDetails}
+                      onEditEvent={handleEditEvent}
+                      currentUser={user}
                     />
                   ))
                 )}

@@ -44,7 +44,12 @@ export const eventService = {
   // Join an event
   joinEvent: async (eventId) => {
     try {
-      const response = await api.post(`/api/events/${eventId}/join`);
+      const response = await api.post(`/api/events/${eventId}/volunteer`, {
+        availableHours: "Flexible hours",
+        specialNeeds: "",
+        notes: "Joining from event service",
+        skills: JSON.stringify(["General Help"])
+      });
       return response.data;
     } catch (error) {
       throw error.response?.data?.message || 'Failed to join event';

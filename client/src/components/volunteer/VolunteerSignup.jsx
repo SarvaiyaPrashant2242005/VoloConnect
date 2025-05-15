@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { 
   Container, 
   Typography, 
@@ -13,14 +13,17 @@ import {
   Chip,
   Grid,
   Snackbar,
-  Alert
+  Alert,
+  Card
 } from '@mui/material';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../config/api';
+import { AuthContext } from '../../context/AuthContext.jsx';
 
 const VolunteerSignup = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { user } = useContext(AuthContext);
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState('');
@@ -33,13 +36,18 @@ const VolunteerSignup = () => {
   });
 
   const [event, setEvent] = useState(null);
+  const [isOrganizer, setIsOrganizer] = useState(false);
 
   React.useEffect(() => {
     const fetchEventDetails = async () => {
       try {
         setLoading(true);
         const response = await api.get(`/api/events/${eventId}`);
-        setEvent(response.data);
+        setEvent(response.data.data);
+        
+        if (user && response.data.data && user.id === response.data.data.organizer_id) {
+          setIsOrganizer(true);
+        }
       } catch (err) {
         console.error('Error fetching event details:', err);
         setError('Failed to load event details');
@@ -51,7 +59,7 @@ const VolunteerSignup = () => {
     if (eventId) {
       fetchEventDetails();
     }
-  }, [eventId]);
+  }, [eventId, user]);
 
   const skillOptions = [
     'Teaching',
@@ -146,6 +154,14 @@ const VolunteerSignup = () => {
         <Typography variant="h4" component="h1" gutterBottom>
           Volunteer for Event
         </Typography>
+
+        {isOrganizer && (
+          <Card sx={{ mb: 3, p: 2, bgcolor: 'info.light', color: 'info.contrastText' }}>
+            <Typography variant="body1">
+              You are the organizer of this event. Signing up as a volunteer will automatically approve your registration.
+            </Typography>
+          </Card>
+        )}
 
         {event && (
           <Box sx={{ mb: 4 }}>
