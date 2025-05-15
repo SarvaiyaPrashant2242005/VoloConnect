@@ -389,7 +389,7 @@ router.post('/:id/volunteer', authenticateUser, async (req, res) => {
 
     // Check if event exists and is active
     const [events] = await pool.query(
-      `SELECT id, max_volunteers, status,
+      `SELECT id, max_volunteers, status, organizer_id,
         (SELECT COUNT(*) FROM event_volunteers WHERE event_id = events.id AND status = 'approved') as current_volunteers
        FROM events 
        WHERE id = ? AND status = 'active'`,
@@ -424,6 +424,10 @@ router.post('/:id/volunteer', authenticateUser, async (req, res) => {
       });
     }
 
+    // Automatically approve if user is the organizer
+    const isOrganizer = event.organizer_id === volunteerId;
+    const initialStatus = isOrganizer ? 'approved' : 'pending';
+
     // Insert volunteer application
     const [result] = await pool.query(
       `INSERT INTO event_volunteers (
@@ -435,25 +439,28 @@ router.post('/:id/volunteer', authenticateUser, async (req, res) => {
         notes,
         status,
         created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
       [
         eventId,
         volunteerId,
         skills,
         availableHours,
         specialNeeds || null,
-        notes || null
+        notes || null,
+        initialStatus
       ]
     );
 
     res.status(201).json({
       success: true,
-      message: 'Volunteer application submitted successfully',
+      message: isOrganizer 
+        ? 'You have been automatically registered as a volunteer for your own event'
+        : 'Volunteer application submitted successfully',
       data: {
         id: result.insertId,
         event_id: eventId,
         volunteer_id: volunteerId,
-        status: 'pending'
+        status: initialStatus
       }
     });
   } catch (error) {
