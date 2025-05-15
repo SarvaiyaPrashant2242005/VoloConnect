@@ -119,20 +119,33 @@ router.get('/my-events', authenticateUser, async (req, res) => {
 router.get('/:id', async (req, res) => {
   try {
     const [events] = await pool.query(`
-      SELECT e.*, u.email as organizer_email, u.first_name, u.last_name
+      SELECT e.*, u.email as organizer_email, u.first_name, u.last_name,
+        (SELECT COUNT(*) FROM event_volunteers WHERE event_id = e.id AND status = 'approved') as current_volunteers
       FROM events e
       LEFT JOIN users u ON e.organizer_id = u.id
       WHERE e.id = ?
     `, [req.params.id]);
 
     if (events.length === 0) {
-      return res.status(404).json({ message: 'Event not found' });
+      return res.status(404).json({ 
+        success: false,
+        message: 'Event not found' 
+      });
     }
 
-    res.json(events[0]);
+    // Format the response to ensure consistent data structure
+    const eventData = {
+      ...events[0],
+      current_volunteers: events[0].current_volunteers || 0
+    };
+
+    res.json(eventData);
   } catch (error) {
     console.error('Error fetching event:', error);
-    res.status(500).json({ message: 'Error fetching event' });
+    res.status(500).json({ 
+      success: false,
+      message: 'Error fetching event' 
+    });
   }
 });
 
@@ -1272,6 +1285,33 @@ router.post('/:id/test-volunteers', authenticateUser, async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Error adding test volunteers',
+      error: error.message
+    });
+  }
+});
+
+// Get volunteer count for a specific event
+router.get('/:id/volunteers/count', async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    
+    // Get count of approved volunteers for this event
+    const [volunteerCount] = await pool.query(
+      `SELECT COUNT(*) as count 
+       FROM event_volunteers 
+       WHERE event_id = ? AND status = 'approved'`,
+      [eventId]
+    );
+
+    res.json({
+      success: true,
+      count: volunteerCount[0].count || 0
+    });
+  } catch (error) {
+    console.error('Error fetching volunteer count:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching volunteer count',
       error: error.message
     });
   }

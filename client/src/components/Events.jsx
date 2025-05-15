@@ -14,6 +14,7 @@ const EventDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [refreshingVolunteers, setRefreshingVolunteers] = useState(false);
 
   useEffect(() => {
     // Get current user from session storage
@@ -26,6 +27,21 @@ const EventDetail = () => {
     const fetchEventDetails = async () => {
       try {
         const response = await api.get(`/api/events/${eventId}`);
+        
+        // If the current_volunteers is not included in the response or is undefined, 
+        // make an additional call to get the latest count
+        if (response.data && (response.data.current_volunteers === undefined)) {
+          try {
+            const volunteersResponse = await api.get(`/api/events/${eventId}/volunteers/count`);
+            if (volunteersResponse.data && volunteersResponse.data.success) {
+              response.data.current_volunteers = volunteersResponse.data.count;
+            }
+          } catch (volErr) {
+            console.error('Error fetching volunteer count:', volErr);
+            // Continue with the event data we have
+          }
+        }
+        
         setEvent(response.data);
         setLoading(false);
       } catch (err) {
@@ -37,6 +53,25 @@ const EventDetail = () => {
 
     fetchEventDetails();
   }, [eventId]);
+
+  const refreshVolunteerCount = async () => {
+    if (!eventId) return;
+    
+    try {
+      setRefreshingVolunteers(true);
+      const volunteersResponse = await api.get(`/api/events/${eventId}/volunteers/count`);
+      if (volunteersResponse.data && volunteersResponse.data.success) {
+        setEvent(prev => ({
+          ...prev,
+          current_volunteers: volunteersResponse.data.count
+        }));
+      }
+    } catch (error) {
+      console.error('Error refreshing volunteer count:', error);
+    } finally {
+      setRefreshingVolunteers(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -151,16 +186,60 @@ const EventDetail = () => {
               <Typography variant="subtitle1" color="text.secondary">
                 👥 Volunteers
               </Typography>
-              <Typography variant="body1">
-                {event.current_volunteers || 0} / {event.max_volunteers} spots filled
-              </Typography>
-              <Box sx={{ mt: 1, width: '100%', backgroundColor: '#e0e0e0', borderRadius: 5, height: 10 }}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Typography variant="body1" sx={{ display: 'flex', alignItems: 'baseline', flex: 1 }}>
+                  <Box component="span" sx={{ fontWeight: 'bold', color: 'text.primary', mr: 0.5 }}>
+                    {event.current_volunteers || 0} / {event.max_volunteers}
+                  </Box>
+                  <Box component="span" sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
+                    spots filled
+                  </Box>
+                </Typography>
+                <Button 
+                  size="small"
+                  sx={{ minWidth: 32, minHeight: 32, p: 0 }}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    refreshVolunteerCount();
+                  }}
+                  disabled={refreshingVolunteers}
+                  title="Refresh volunteer count"
+                >
+                  {refreshingVolunteers ? '...' : '🔄'}
+                </Button>
+              </Box>
+            </Box>
+            
+            <Box sx={{ 
+              mt: 1, 
+              width: '100%', 
+              backgroundColor: 'background.default', 
+              borderRadius: 1, 
+              height: 8,
+              position: 'relative',
+              overflow: 'hidden'
+            }}>
+              <Box 
+                sx={{ 
+                  width: `${Math.min(((event.current_volunteers || 0) / event.max_volunteers) * 100, 100)}%`,
+                  backgroundColor: event.status === 'full' ? 'error.main' : 'success.main',
+                  height: '100%',
+                  borderRadius: 1,
+                  position: 'relative',
+                  overflow: 'hidden',
+                  transition: 'width 0.3s ease, background-color 0.3s ease',
+                  animation: refreshingVolunteers ? 'pulse 1.5s ease-in-out infinite' : 'none'
+                }}
+              >
                 <Box 
                   sx={{ 
-                    width: `${Math.min(((event.current_volunteers || 0) / event.max_volunteers) * 100, 100)}%`,
-                    backgroundColor: event.status === 'full' ? '#f44336' : '#4caf50',
-                    height: '100%',
-                    borderRadius: 5
+                    position: 'absolute',
+                    top: 0,
+                    bottom: 0,
+                    right: 0,
+                    width: 8,
+                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                    transform: 'skewX(-20deg)'
                   }}
                 />
               </Box>
@@ -218,6 +297,7 @@ const Events = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentUser, setCurrentUser] = useState(null);
+  const [refreshingVolunteers, setRefreshingVolunteers] = useState(false);
 
   useEffect(() => {
     // Get current user from session storage
@@ -315,18 +395,60 @@ const Events = () => {
                     ⏰ {format(new Date(event.start_date), 'hh:mm a')} - {format(new Date(event.end_date), 'hh:mm a')}
                   </Typography>
                 </Box>
+                
+                {/* Volunteers progress indicator */}
+                <Box sx={{ mb: 2 }}>
+                  <Typography variant="body2" sx={{ display: 'flex', alignItems: 'baseline', mb: 0.5 }}>
+                    <Box component="span" sx={{ fontWeight: 'bold', color: 'text.primary', mr: 0.5 }}>
+                      👥 {event.current_volunteers || 0}/{event.max_volunteers}
+                    </Box>
+                    <Box component="span" sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>
+                      volunteers
+                    </Box>
+                  </Typography>
+                  <Box sx={{ 
+                    width: '100%', 
+                    backgroundColor: 'background.default', 
+                    borderRadius: 1, 
+                    height: 6,
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <Box 
+                      sx={{ 
+                        width: `${Math.min(((event.current_volunteers || 0) / event.max_volunteers) * 100, 100)}%`,
+                        backgroundColor: event.status === 'full' ? 'error.main' : 'success.main',
+                        height: '100%',
+                        borderRadius: 1,
+                        position: 'relative',
+                        overflow: 'hidden',
+                        transition: 'width 0.3s ease, background-color 0.3s ease',
+                        animation: refreshingVolunteers ? 'pulse 1.5s ease-in-out infinite' : 'none'
+                      }}
+                    >
+                      <Box 
+                        sx={{ 
+                          position: 'absolute',
+                          top: 0,
+                          bottom: 0,
+                          right: 0,
+                          width: 6,
+                          backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                          transform: 'skewX(-20deg)'
+                        }}
+                      />
+                    </Box>
+                  </Box>
+                </Box>
+                
                 <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
                   <Chip 
                     label={event.status} 
                     color={event.status === 'active' ? 'success' : 'default'}
                     size="small"
                   />
-                  <Chip 
-                    label={`${event.max_volunteers} volunteers needed`}
-                    variant="outlined"
-                    size="small"
-                  />
                 </Box>
+                
                 {event.organizer_email && (
                   <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>
                     Organized by: {event.first_name} {event.last_name}

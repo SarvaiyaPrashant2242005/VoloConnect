@@ -47,7 +47,10 @@ const EventCard = ({ event, onJoinEvent, onViewDetails }) => {
         <div className={styles.eventDetail}>
           <span className={styles.detailIcon}>👥</span>
           <span className={styles.detailText}>
-            {event.current_volunteers || 0}/{event.max_volunteers} volunteers
+            <span className={styles.volunteerCount}>
+              {event.current_volunteers || 0}/{event.max_volunteers}
+            </span> 
+            <span className={styles.volunteerLabel}>volunteers</span>
           </span>
         </div>
       </div>
@@ -55,9 +58,12 @@ const EventCard = ({ event, onJoinEvent, onViewDetails }) => {
         <div 
           className={styles.progressBar} 
           style={{ 
-            width: `${Math.min(((event.current_volunteers || 0) / event.max_volunteers) * 100, 100)}%`
+            width: `${Math.min(((event.current_volunteers || 0) / event.max_volunteers) * 100, 100)}%`,
+            backgroundColor: event.status === 'full' ? 'var(--color-error)' : 'var(--color-success)'
           }}
-        ></div>
+        >
+          <span className={styles.progressIndicator}></span>
+        </div>
       </div>
       <div className={styles.eventActions}>
         <button 
@@ -410,12 +416,7 @@ const Dashboard = ({ user, onLogout }) => {
                     >
                       Active
                     </button>
-                    <button
-                      className={`${styles.filterButton} ${filterStatus === 'upcoming' ? styles.active : ''}`}
-                      onClick={() => setFilterStatus('upcoming')}
-                    >
-                      Upcoming
-                    </button>
+                   
                   </div>
                 </div>
                 <div className={styles.eventsGrid}>
@@ -449,12 +450,7 @@ const Dashboard = ({ user, onLogout }) => {
                   >
                     Active
                   </button>
-                  <button
-                    className={`${styles.filterButton} ${filterStatus === 'upcoming' ? styles.active : ''}`}
-                    onClick={() => setFilterStatus('upcoming')}
-                  >
-                    Upcoming
-                  </button>
+                 
                 </div>
               </div>
               <div className={styles.eventsGrid}>
