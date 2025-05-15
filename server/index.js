@@ -4,6 +4,7 @@ const app = express();
 const authRoutes = require('./routes/auth');
 const eventsRoutes = require('./routes/events');
 const volunteerRoutes = require('./routes/volunteers');
+const emailRoutes = require('./routes/email');
 const cors = require('cors');
 require('dotenv').config();
 
@@ -27,6 +28,7 @@ app.use(cors(corsOptions));
 app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/email', emailRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -41,4 +43,9 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  console.log('Available routes:');
+  console.log('- /api/volunteers');
+  console.log('- /api/events');
+  console.log('- /api/auth');
+  console.log('- /api/email');
 });

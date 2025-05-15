@@ -2,672 +2,515 @@ import React, { useState, useEffect } from 'react';
 import {
   Container,
   Typography,
-  Paper,
   Box,
+  Paper,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   TextField,
   Grid,
-  CircularProgress,
-  Chip,
-  List,
-  ListItem,
-  ListItemText,
+  Card,
+  CardContent,
   Divider,
+  FormControl,
+  FormControlLabel,
   Checkbox,
   FormGroup,
-  FormControlLabel,
-  Alert
+  FormLabel,
+  MenuItem,
+  Select,
+  InputLabel,
+  CircularProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Alert,
+  Snackbar
 } from '@mui/material';
 import {
-  FileDownload as DownloadIcon,
-  Event as EventIcon,
-  BarChart as ChartIcon,
-  GroupWork as GroupIcon
+  Download as DownloadIcon,
+  Preview as PreviewIcon,
+  FilterList as FilterIcon,
+  Clear as ClearIcon
 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api';
 
-const ExportVolunteers = () => {
-  const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
-  const [events, setEvents] = useState([]);
-  const [selectedEvent, setSelectedEvent] = useState('');
-  const [exportFormat, setExportFormat] = useState('excel');
-  const [dateRange, setDateRange] = useState({
-    startDate: '',
-    endDate: ''
-  });
-  const [exportFields, setExportFields] = useState({
-    personalInfo: true,
-    contactInfo: true,
-    skills: true,
-    hours: true,
-    status: true,
-    attendance: true
-  });
-  const [previewData, setPreviewData] = useState(null);
-  const [exportMessage, setExportMessage] = useState({ type: '', message: '' });
+// Helper function to download CSV
+const downloadCSV = (data, filename) => {
+  // Convert data to CSV format
+  const headers = Object.keys(data[0]);
+  const csvRows = [];
+  
+  // Add headers
+  csvRows.push(headers.join(','));
+  
+  // Add rows
+  for (const row of data) {
+    const values = headers.map(header => {
+      const value = row[header];
+      // Handle values with commas or quotes
+      const escaped = ('' + value).replace(/"/g, '\\"');
+      return `"${escaped}"`;
+    });
+    csvRows.push(values.join(','));
+  }
+  
+  // Download CSV file
+  const csvString = csvRows.join('\n');
+  const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', filename);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+};
 
+const ExportVolunteers = ({ user }) => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [events, setEvents] = useState([]);
+  const [selectedEvent, setSelectedEvent] = useState('all');
+  const [volunteers, setVolunteers] = useState([]);
+  const [filteredVolunteers, setFilteredVolunteers] = useState([]);
+  const [openSnackbar, setOpenSnackbar] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const [previewData, setPreviewData] = useState([]);
+  const [showPreview, setShowPreview] = useState(false);
+  
+  // Export options
+  const [exportFields, setExportFields] = useState({
+    name: true,
+    email: true,
+    phone: true,
+    skills: true,
+    availableHours: true,
+    status: true,
+    registrationDate: true,
+    hoursContributed: true,
+    feedback: false,
+    specialNeeds: false,
+    notes: false
+  });
+  
   useEffect(() => {
-    const fetchEvents = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const response = await api.get('/api/events');
-        setEvents(response.data);
+        
+        // Fetch events where user is organizer
+        const eventsResponse = await api.get('/api/events');
+        const userEvents = eventsResponse.data.filter(event => 
+          event.organizer_id === user?.id
+        );
+        setEvents(userEvents);
+        
+        // Fetch all volunteers for those events
+        if (userEvents.length > 0) {
+          const volunteersPromises = userEvents.map(event => 
+            api.get(`/api/events/${event.id}/volunteers`)
+          );
+          
+          const volunteersResponses = await Promise.all(volunteersPromises);
+          
+          // Combine all volunteers from all events
+          let allVolunteers = [];
+          volunteersResponses.forEach((response, index) => {
+            if (response.data && response.data.success) {
+              // Add event title to each volunteer record
+              const volunteersWithEventTitle = response.data.data.map(volunteer => ({
+                ...volunteer,
+                event_title: userEvents[index].title
+              }));
+              allVolunteers = [...allVolunteers, ...volunteersWithEventTitle];
+            }
+          });
+          
+          setVolunteers(allVolunteers);
+          setFilteredVolunteers(allVolunteers);
+        }
       } catch (err) {
-        console.error('Error fetching events:', err);
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again later.');
       } finally {
         setLoading(false);
       }
     };
-
-    fetchEvents();
-  }, []);
-
-  const handleEventChange = (e) => {
-    setSelectedEvent(e.target.value);
-  };
-
-  const handleFormatChange = (e) => {
-    setExportFormat(e.target.value);
-  };
-
-  const handleDateChange = (e) => {
-    const { name, value } = e.target;
-    setDateRange(prev => ({
-      ...prev,
-      [name]: value
-    }));
-  };
-
-  const handleFieldToggle = (field) => {
-    setExportFields(prev => ({
-      ...prev,
-      [field]: !prev[field]
-    }));
-  };
-
-  const handlePreviewData = async () => {
-    if (!validateExport()) return;
-
-    try {
-      setLoading(true);
-      setExportMessage({ type: '', message: '' });
-
-      let endpoint;
-      let params = {};
-
-      if (selectedEvent) {
-        endpoint = `/api/events/${selectedEvent}/volunteers/export`;
-      } else {
-        endpoint = '/api/volunteers/export';
-        if (dateRange.startDate) {
-          params.startDate = dateRange.startDate;
-        }
-        if (dateRange.endDate) {
-          params.endDate = dateRange.endDate;
-        }
-      }
-
-      // In a real app, you would make an API call here
-      // For demo purposes, we'll simulate some data
-      
-      // Mock data for preview
-      const mockData = [
-        {
-          id: 1,
-          first_name: 'John',
-          last_name: 'Doe',
-          email: 'john.doe@example.com',
-          phone: '123-456-7890',
-          skills: JSON.stringify(['Teaching', 'Leadership']),
-          hours_worked: 5,
-          status: 'approved',
-          attendance: 'attended',
-          event_title: 'Community Cleanup',
-          event_date: '2023-08-15'
-        },
-        {
-          id: 2,
-          first_name: 'Jane',
-          last_name: 'Smith',
-          email: 'jane.smith@example.com',
-          phone: '987-654-3210',
-          skills: JSON.stringify(['First Aid', 'Project Management']),
-          hours_worked: 3.5,
-          status: 'approved',
-          attendance: 'attended',
-          event_title: 'Food Drive',
-          event_date: '2023-09-20'
-        }
-      ];
-      
-      // Format data based on selected fields
-      const formattedData = mockData.map(volunteer => {
-        const formatted = {};
-        
-        if (exportFields.personalInfo) {
-          formatted['Full Name'] = `${volunteer.first_name} ${volunteer.last_name}`;
-        }
-        
-        if (exportFields.contactInfo) {
-          formatted['Email'] = volunteer.email;
-          formatted['Phone'] = volunteer.phone;
-        }
-        
-        if (exportFields.skills) {
-          try {
-            formatted['Skills'] = JSON.parse(volunteer.skills).join(', ');
-          } catch (e) {
-            formatted['Skills'] = volunteer.skills;
-          }
-        }
-        
-        if (exportFields.hours) {
-          formatted['Hours Worked'] = volunteer.hours_worked;
-        }
-        
-        if (exportFields.status) {
-          formatted['Status'] = volunteer.status;
-        }
-        
-        if (exportFields.attendance) {
-          formatted['Attendance'] = volunteer.attendance;
-        }
-        
-        formatted['Event'] = volunteer.event_title;
-        formatted['Date'] = new Date(volunteer.event_date).toLocaleDateString();
-        
-        return formatted;
-      });
-      
-      setPreviewData(formattedData);
-    } catch (err) {
-      console.error('Error generating preview:', err);
-      setExportMessage({ 
-        type: 'error', 
-        message: 'Failed to generate preview data. Please try again.' 
-      });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleExportData = () => {
-    if (!validateExport()) return;
     
-    try {
-      setLoading(true);
-      setExportMessage({ type: '', message: '' });
+    fetchData();
+  }, [user]);
+  
+  // Update filtered volunteers when event selection changes
+  useEffect(() => {
+    if (selectedEvent === 'all') {
+      setFilteredVolunteers(volunteers);
+    } else {
+      setFilteredVolunteers(
+        volunteers.filter(volunteer => volunteer.event_id === parseInt(selectedEvent))
+      );
+    }
+    
+    // Reset preview when selection changes
+    setShowPreview(false);
+  }, [selectedEvent, volunteers]);
+  
+  const handleEventChange = (event) => {
+    setSelectedEvent(event.target.value);
+  };
+  
+  const handleExportFieldChange = (field) => {
+    setExportFields({
+      ...exportFields,
+      [field]: !exportFields[field]
+    });
+  };
+  
+  const handleGeneratePreview = () => {
+    if (filteredVolunteers.length === 0) {
+      setSnackbarMessage('No volunteers to preview');
+      setOpenSnackbar(true);
+      return;
+    }
+    
+    // Format data based on selected fields
+    const preview = filteredVolunteers.map(volunteer => {
+      const formattedRecord = {};
       
-      if (!previewData) {
-        handlePreviewData();
-        return;
+      if (exportFields.name) {
+        formattedRecord['Full Name'] = `${volunteer.first_name} ${volunteer.last_name}`;
       }
       
-      // In a real app, this would use the xlsx library
-      const exportFileName = selectedEvent 
-        ? `volunteers-event-${selectedEvent}` 
-        : `volunteers-${dateRange.startDate || 'all'}-to-${dateRange.endDate || 'all'}`;
-      
-      setTimeout(() => {
-        // Simulate export process
-        setExportMessage({ 
-          type: 'success', 
-          message: `Data successfully exported as ${exportFormat.toUpperCase()} file!` 
-        });
-        
-        // Mock download by using CSV for demo
-        const headers = Object.keys(previewData[0]);
-        const csvRows = [];
-        
-        // Add headers
-        csvRows.push(headers.join(','));
-        
-        // Add rows
-        for (const row of previewData) {
-          const values = headers.map(header => {
-            const value = row[header];
-            // Handle values with commas or quotes
-            const escaped = ('' + value).replace(/"/g, '\\"');
-            return `"${escaped}"`;
-          });
-          csvRows.push(values.join(','));
-        }
-        
-        // Download CSV file
-        const csvString = csvRows.join('\n');
-        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.setAttribute('href', url);
-        link.setAttribute('download', `${exportFileName}.csv`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        setLoading(false);
-      }, 1500);
-    } catch (err) {
-      console.error('Error exporting data:', err);
-      setExportMessage({ 
-        type: 'error', 
-        message: 'Failed to export data. Please try again.' 
-      });
-      setLoading(false);
-    }
-  };
-
-  const validateExport = () => {
-    // Check if at least one field is selected
-    const anyFieldSelected = Object.values(exportFields).some(value => value);
-    
-    if (!anyFieldSelected) {
-      setExportMessage({ 
-        type: 'error', 
-        message: 'Please select at least one field to export' 
-      });
-      return false;
-    }
-    
-    // Check if date range is valid if specified
-    if (dateRange.startDate && dateRange.endDate) {
-      if (new Date(dateRange.startDate) > new Date(dateRange.endDate)) {
-        setExportMessage({ 
-          type: 'error', 
-          message: 'Start date must be before end date' 
-        });
-        return false;
+      if (exportFields.email) {
+        formattedRecord['Email'] = volunteer.email;
       }
+      
+      if (exportFields.phone) {
+        formattedRecord['Phone'] = volunteer.phone;
+      }
+      
+      if (exportFields.skills) {
+        try {
+          const skills = typeof volunteer.skills === 'string' 
+            ? JSON.parse(volunteer.skills || '[]') 
+            : (volunteer.skills || []);
+          formattedRecord['Skills'] = skills.join(', ');
+        } catch (e) {
+          formattedRecord['Skills'] = '';
+        }
+      }
+      
+      if (exportFields.availableHours) {
+        formattedRecord['Available Hours'] = volunteer.available_hours || '';
+      }
+      
+      if (exportFields.status) {
+        formattedRecord['Status'] = volunteer.status;
+      }
+      
+      if (exportFields.registrationDate) {
+        formattedRecord['Registration Date'] = new Date(volunteer.created_at).toLocaleDateString();
+      }
+      
+      if (exportFields.hoursContributed) {
+        formattedRecord['Hours Contributed'] = volunteer.hours_contributed || 0;
+      }
+      
+      if (exportFields.feedback) {
+        formattedRecord['Feedback'] = volunteer.feedback || '';
+      }
+      
+      if (exportFields.specialNeeds) {
+        formattedRecord['Special Needs'] = volunteer.special_needs || '';
+      }
+      
+      if (exportFields.notes) {
+        formattedRecord['Notes'] = volunteer.notes || '';
+      }
+      
+      // Always include event title
+      formattedRecord['Event'] = volunteer.event_title;
+      
+      return formattedRecord;
+    });
+    
+    setPreviewData(preview);
+    setShowPreview(true);
+  };
+  
+  const handleExport = () => {
+    if (filteredVolunteers.length === 0) {
+      setSnackbarMessage('No volunteers to export');
+      setOpenSnackbar(true);
+      return;
     }
     
-    return true;
+    // Generate preview data if not already generated
+    if (previewData.length === 0) {
+      handleGeneratePreview();
+    }
+    
+    // Export to CSV
+    const eventName = selectedEvent === 'all' 
+      ? 'all-events' 
+      : events.find(e => e.id === parseInt(selectedEvent))?.title.toLowerCase().replace(/\s+/g, '-');
+    
+    downloadCSV(previewData, `volunteers-${eventName}-${new Date().toISOString().split('T')[0]}.csv`);
+    
+    setSnackbarMessage('Volunteers data exported successfully');
+    setOpenSnackbar(true);
   };
-
+  
+  const handleClearSelection = () => {
+    setExportFields({
+      name: true,
+      email: true,
+      phone: true,
+      skills: true,
+      availableHours: true,
+      status: true,
+      registrationDate: true,
+      hoursContributed: true,
+      feedback: false,
+      specialNeeds: false,
+      notes: false
+    });
+    setSelectedEvent('all');
+    setShowPreview(false);
+  };
+  
+  if (loading) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', my: 8 }}>
+          <CircularProgress />
+          <Typography sx={{ mt: 2 }}>Loading volunteer data...</Typography>
+        </Box>
+      </Container>
+    );
+  }
+  
+  if (error) {
+    return (
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Alert severity="error" sx={{ mb: 4 }}>{error}</Alert>
+        <Button variant="contained" onClick={() => navigate('/dashboard')}>
+          Return to Dashboard
+        </Button>
+      </Container>
+    );
+  }
+  
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Typography variant="h4" component="h1" gutterBottom>
         Export Volunteer Data
       </Typography>
       
-      <Grid container spacing={4}>
-        {/* Export Options */}
-        <Grid item xs={12} md={6}>
-          <Paper 
-            elevation={3} 
-            sx={{ 
-              p: 3, 
-              bgcolor: 'background.paper',
-              borderRadius: 2
-            }}
+      {events.length === 0 ? (
+        <Paper sx={{ p: 4, textAlign: 'center' }}>
+          <Typography variant="h6" gutterBottom>
+            You don't have any events as an organizer
+          </Typography>
+          <Typography variant="body1" color="text.secondary" paragraph>
+            You need to be an event organizer to export volunteer data.
+          </Typography>
+          <Button 
+            variant="contained" 
+            color="primary"
+            onClick={() => navigate('/events/create')}
+            sx={{ mt: 2 }}
           >
-            <Typography variant="h6" gutterBottom>
-              Export Options
-            </Typography>
-            
-            <Box sx={{ mb: 3 }}>
-              <FormControl fullWidth sx={{ mb: 2 }}>
+            Create an Event
+          </Button>
+        </Paper>
+      ) : (
+        <Grid container spacing={4}>
+          <Grid item xs={12} md={4}>
+            <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
+              <Typography variant="h6" gutterBottom>
+                Export Options
+              </Typography>
+              
+              <FormControl fullWidth sx={{ mb: 3 }}>
                 <InputLabel id="event-select-label">Select Event</InputLabel>
                 <Select
                   labelId="event-select-label"
                   value={selectedEvent}
-                  onChange={handleEventChange}
                   label="Select Event"
+                  onChange={handleEventChange}
                 >
-                  <MenuItem value="">All Events</MenuItem>
-                  {events.map(event => (
-                    <MenuItem key={event.id} value={event.id}>{event.title}</MenuItem>
-                  ))}
+                  <MenuItem value="all">All Events ({volunteers.length} volunteers)</MenuItem>
+                  {events.map(event => {
+                    const volunteerCount = volunteers.filter(v => v.event_id === event.id).length;
+                    return (
+                      <MenuItem key={event.id} value={event.id}>
+                        {event.title} ({volunteerCount} volunteers)
+                      </MenuItem>
+                    );
+                  })}
                 </Select>
               </FormControl>
               
-              {!selectedEvent && (
-                <Box sx={{ mb: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Date Range (Optional)
-                  </Typography>
-                  <Grid container spacing={2}>
-                    <Grid item xs={6}>
-                      <TextField
-                        fullWidth
-                        label="Start Date"
-                        type="date"
-                        name="startDate"
-                        value={dateRange.startDate}
-                        onChange={handleDateChange}
-                        InputLabelProps={{ shrink: true }}
-                      />
-                    </Grid>
-                    <Grid item xs={6}>
-                      <TextField
-                        fullWidth
-                        label="End Date"
-                        type="date"
-                        name="endDate"
-                        value={dateRange.endDate}
-                        onChange={handleDateChange}
-                        InputLabelProps={{ shrink: true }}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
-              )}
+              <Divider sx={{ my: 2 }} />
               
-              <FormControl fullWidth sx={{ mb: 2 }}>
-                <InputLabel id="format-select-label">Export Format</InputLabel>
-                <Select
-                  labelId="format-select-label"
-                  value={exportFormat}
-                  onChange={handleFormatChange}
-                  label="Export Format"
-                >
-                  <MenuItem value="excel">Excel (.xlsx)</MenuItem>
-                  <MenuItem value="csv">CSV</MenuItem>
-                  <MenuItem value="pdf">PDF</MenuItem>
-                </Select>
-              </FormControl>
-            </Box>
-            
-            <Typography variant="h6" gutterBottom>
-              Fields to Include
-            </Typography>
-            
-            <FormGroup>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
+              <FormControl component="fieldset" sx={{ mb: 3 }}>
+                <FormLabel component="legend">Fields to Export</FormLabel>
+                <FormGroup>
                   <FormControlLabel
-                    control={
-                      <Checkbox 
-                        checked={exportFields.personalInfo} 
-                        onChange={() => handleFieldToggle('personalInfo')} 
-                      />
-                    }
-                    label="Personal Information"
+                    control={<Checkbox checked={exportFields.name} onChange={() => handleExportFieldChange('name')} />}
+                    label="Full Name"
                   />
-                </Grid>
-                <Grid item xs={6}>
                   <FormControlLabel
-                    control={
-                      <Checkbox 
-                        checked={exportFields.contactInfo} 
-                        onChange={() => handleFieldToggle('contactInfo')} 
-                      />
-                    }
-                    label="Contact Information"
+                    control={<Checkbox checked={exportFields.email} onChange={() => handleExportFieldChange('email')} />}
+                    label="Email"
                   />
-                </Grid>
-                <Grid item xs={6}>
                   <FormControlLabel
-                    control={
-                      <Checkbox 
-                        checked={exportFields.skills} 
-                        onChange={() => handleFieldToggle('skills')} 
-                      />
-                    }
+                    control={<Checkbox checked={exportFields.phone} onChange={() => handleExportFieldChange('phone')} />}
+                    label="Phone"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={exportFields.skills} onChange={() => handleExportFieldChange('skills')} />}
                     label="Skills"
                   />
-                </Grid>
-                <Grid item xs={6}>
                   <FormControlLabel
-                    control={
-                      <Checkbox 
-                        checked={exportFields.hours} 
-                        onChange={() => handleFieldToggle('hours')} 
-                      />
-                    }
-                    label="Hours Worked"
+                    control={<Checkbox checked={exportFields.availableHours} onChange={() => handleExportFieldChange('availableHours')} />}
+                    label="Available Hours"
                   />
-                </Grid>
-                <Grid item xs={6}>
                   <FormControlLabel
-                    control={
-                      <Checkbox 
-                        checked={exportFields.status} 
-                        onChange={() => handleFieldToggle('status')} 
-                      />
-                    }
+                    control={<Checkbox checked={exportFields.status} onChange={() => handleExportFieldChange('status')} />}
                     label="Status"
                   />
-                </Grid>
-                <Grid item xs={6}>
                   <FormControlLabel
-                    control={
-                      <Checkbox 
-                        checked={exportFields.attendance} 
-                        onChange={() => handleFieldToggle('attendance')} 
-                      />
-                    }
-                    label="Attendance"
+                    control={<Checkbox checked={exportFields.registrationDate} onChange={() => handleExportFieldChange('registrationDate')} />}
+                    label="Registration Date"
                   />
-                </Grid>
-              </Grid>
-            </FormGroup>
-            
-            {exportMessage.type && (
-              <Alert 
-                severity={exportMessage.type} 
-                sx={{ mt: 2 }}
-                onClose={() => setExportMessage({ type: '', message: '' })}
-              >
-                {exportMessage.message}
-              </Alert>
-            )}
-            
-            <Box sx={{ mt: 3, display: 'flex', gap: 2 }}>
-              <Button
-                variant="outlined"
-                onClick={handlePreviewData}
-                disabled={loading}
-              >
-                Preview Data
-              </Button>
-              <Button
-                variant="contained"
-                color="primary"
-                startIcon={<DownloadIcon />}
-                onClick={handleExportData}
-                disabled={loading}
-              >
-                {loading ? 'Exporting...' : 'Export Data'}
-              </Button>
-            </Box>
-          </Paper>
-        </Grid>
-        
-        {/* Data Preview */}
-        <Grid item xs={12} md={6}>
-          <Paper 
-            elevation={3} 
-            sx={{ 
-              p: 3, 
-              bgcolor: 'background.paper',
-              borderRadius: 2,
-              height: '100%'
-            }}
-          >
-            <Typography variant="h6" gutterBottom>
-              Data Preview
-            </Typography>
-            
-            {loading ? (
-              <Box sx={{ display: 'flex', justifyContent: 'center', my: 8 }}>
-                <CircularProgress />
+                  <FormControlLabel
+                    control={<Checkbox checked={exportFields.hoursContributed} onChange={() => handleExportFieldChange('hoursContributed')} />}
+                    label="Hours Contributed"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={exportFields.feedback} onChange={() => handleExportFieldChange('feedback')} />}
+                    label="Feedback"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={exportFields.specialNeeds} onChange={() => handleExportFieldChange('specialNeeds')} />}
+                    label="Special Needs"
+                  />
+                  <FormControlLabel
+                    control={<Checkbox checked={exportFields.notes} onChange={() => handleExportFieldChange('notes')} />}
+                    label="Notes"
+                  />
+                </FormGroup>
+              </FormControl>
+              
+              <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
+                <Button
+                  variant="outlined"
+                  startIcon={<PreviewIcon />}
+                  onClick={handleGeneratePreview}
+                  disabled={filteredVolunteers.length === 0}
+                >
+                  Preview
+                </Button>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  startIcon={<DownloadIcon />}
+                  onClick={handleExport}
+                  disabled={filteredVolunteers.length === 0}
+                >
+                  Export CSV
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  startIcon={<ClearIcon />}
+                  onClick={handleClearSelection}
+                >
+                  Reset
+                </Button>
               </Box>
-            ) : previewData ? (
-              <Box sx={{ mt: 2 }}>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Showing {previewData.length} record(s)
+            </Paper>
+          </Grid>
+          
+          <Grid item xs={12} md={8}>
+            <Paper elevation={3} sx={{ p: 3, height: '100%' }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="h6">
+                  {showPreview ? 'Preview Data' : 'Selected Volunteers'}
                 </Typography>
-                
-                <List sx={{ maxHeight: 400, overflow: 'auto' }}>
-                  {previewData.map((item, index) => (
-                    <React.Fragment key={index}>
-                      <ListItem alignItems="flex-start">
-                        <ListItemText
-                          primary={item['Full Name'] || 'Volunteer'}
-                          secondary={
-                            <Box sx={{ mt: 1 }}>
-                              {Object.entries(item).map(([key, value]) => (
-                                key !== 'Full Name' && (
-                                  <Typography 
-                                    key={key} 
-                                    variant="body2" 
-                                    component="div" 
-                                    sx={{ mb: 0.5 }}
-                                  >
-                                    <strong>{key}:</strong> {value}
-                                  </Typography>
-                                )
-                              ))}
-                            </Box>
-                          }
-                        />
-                      </ListItem>
-                      {index < previewData.length - 1 && <Divider />}
-                    </React.Fragment>
-                  ))}
-                </List>
-              </Box>
-            ) : (
-              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: 300 }}>
-                <Typography variant="body1" color="text.secondary" textAlign="center">
-                  Select export options and click "Preview Data" to see a sample of the data.
+                <Typography variant="body2" color="text.secondary">
+                  {filteredVolunteers.length} volunteer{filteredVolunteers.length !== 1 ? 's' : ''}
                 </Typography>
               </Box>
-            )}
-          </Paper>
+              
+              {filteredVolunteers.length === 0 ? (
+                <Box sx={{ textAlign: 'center', py: 4 }}>
+                  <Typography variant="body1" color="text.secondary">
+                    No volunteers found for the selected event.
+                  </Typography>
+                </Box>
+              ) : showPreview ? (
+                <TableContainer sx={{ maxHeight: 440 }}>
+                  <Table stickyHeader size="small">
+                    <TableHead>
+                      <TableRow>
+                        {previewData.length > 0 && Object.keys(previewData[0]).map((header, index) => (
+                          <TableCell key={index}>{header}</TableCell>
+                        ))}
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {previewData.map((row, rowIndex) => (
+                        <TableRow key={rowIndex}>
+                          {Object.values(row).map((value, colIndex) => (
+                            <TableCell key={colIndex}>{value}</TableCell>
+                          ))}
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <TableContainer sx={{ maxHeight: 440 }}>
+                  <Table stickyHeader size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Event</TableCell>
+                        <TableCell>Status</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {filteredVolunteers.map((volunteer) => (
+                        <TableRow key={volunteer.id}>
+                          <TableCell>{volunteer.first_name} {volunteer.last_name}</TableCell>
+                          <TableCell>{volunteer.email}</TableCell>
+                          <TableCell>{volunteer.event_title}</TableCell>
+                          <TableCell>{volunteer.status}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              )}
+            </Paper>
+          </Grid>
         </Grid>
-      </Grid>
+      )}
       
-      {/* Export Templates */}
-      <Paper 
-        elevation={3} 
-        sx={{ 
-          p: 3, 
-          mt: 4,
-          bgcolor: 'background.paper',
-          borderRadius: 2
-        }}
-      >
-        <Typography variant="h6" gutterBottom>
-          Export Templates
-        </Typography>
-        
-        <Typography variant="body2" color="text.secondary" paragraph>
-          Use these pre-configured templates for common reporting needs:
-        </Typography>
-        
-        <Grid container spacing={2}>
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: 2, 
-                textAlign: 'center',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: 3
-                }
-              }}
-              onClick={() => {
-                // Would set appropriate export options
-                alert('Event Summary template selected');
-              }}
-            >
-              <EventIcon sx={{ fontSize: 40, mb: 1, color: 'primary.main' }} />
-              <Typography variant="subtitle1">Event Summary</Typography>
-              <Typography variant="body2" color="text.secondary">
-                All volunteers grouped by event
-              </Typography>
-            </Paper>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: 2, 
-                textAlign: 'center',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: 3
-                }
-              }}
-              onClick={() => {
-                // Would set appropriate export options
-                alert('Monthly Report template selected');
-              }}
-            >
-              <ChartIcon sx={{ fontSize: 40, mb: 1, color: 'primary.main' }} />
-              <Typography variant="subtitle1">Monthly Report</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Volunteer hours by month
-              </Typography>
-            </Paper>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: 2, 
-                textAlign: 'center',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: 3
-                }
-              }}
-              onClick={() => {
-                // Would set appropriate export options
-                alert('Skills Directory template selected');
-              }}
-            >
-              <GroupIcon sx={{ fontSize: 40, mb: 1, color: 'primary.main' }} />
-              <Typography variant="subtitle1">Skills Directory</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Volunteers grouped by skills
-              </Typography>
-            </Paper>
-          </Grid>
-          
-          <Grid item xs={12} sm={6} md={3}>
-            <Paper 
-              elevation={2} 
-              sx={{ 
-                p: 2, 
-                textAlign: 'center',
-                cursor: 'pointer',
-                transition: 'transform 0.2s',
-                '&:hover': {
-                  transform: 'scale(1.02)',
-                  boxShadow: 3
-                }
-              }}
-              onClick={() => {
-                // Would set appropriate export options
-                alert('Contact List template selected');
-              }}
-            >
-              <DownloadIcon sx={{ fontSize: 40, mb: 1, color: 'primary.main' }} />
-              <Typography variant="subtitle1">Contact List</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Name and contact information only
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Paper>
+      <Snackbar
+        open={openSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setOpenSnackbar(false)}
+        message={snackbarMessage}
+      />
     </Container>
   );
 };

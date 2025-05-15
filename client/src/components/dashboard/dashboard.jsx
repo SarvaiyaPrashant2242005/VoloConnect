@@ -106,6 +106,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [events, setEvents] = useState([]);
+  const [myEvents, setMyEvents] = useState([]);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -167,13 +168,47 @@ const Dashboard = ({ user, onLogout }) => {
 
   const fetchEvents = async () => {
     try {
-      const response = await api.get('/api/events');
-      if (response.data.success) {
-        setEvents(response.data.data);
+      setLoading(true);
+      
+      // Fetch all events
+      const allEventsResponse = await api.get('/api/events');
+      console.log('All events response:', allEventsResponse);
+      
+      if (allEventsResponse.data) {
+        // Handle different response formats
+        let allEventsData = Array.isArray(allEventsResponse.data) 
+          ? allEventsResponse.data 
+          : (allEventsResponse.data.data || []);
+          
+        console.log('Processed all events data:', allEventsData);
+        setEvents(allEventsData);
+      } else {
+        console.warn('No data in all events response');
+        setEvents([]);
+      }
+      
+      // Fetch events created by the current user
+      try {
+        const myEventsResponse = await api.get('/api/events/my-events');
+        console.log('My events response:', myEventsResponse);
+        
+        if (myEventsResponse.data && myEventsResponse.data.success) {
+          setMyEvents(myEventsResponse.data.data || []);
+          console.log('My events data loaded:', myEventsResponse.data.data);
+        } else {
+          console.warn('No data or success flag in my events response');
+          setMyEvents([]);
+        }
+      } catch (myEventsError) {
+        console.error('Error fetching my events:', myEventsError);
+        // Don't fail the whole function if my-events fails
+        setMyEvents([]);
       }
     } catch (error) {
       console.error('Error fetching events:', error);
       setError('Failed to load events. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -205,7 +240,7 @@ const Dashboard = ({ user, onLogout }) => {
       
       // Show success message and navigate to events
       alert('Event created successfully!');
-      setActiveTab('events');
+      setActiveTab('all-events');
     } catch (error) {
       console.error('Error creating event:', error);
       alert(error.message || 'Failed to create event. Please try again.');
@@ -213,6 +248,13 @@ const Dashboard = ({ user, onLogout }) => {
   };
 
   const filteredEvents = events.filter(event => {
+    const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         event.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = filterStatus === 'all' || event.status === filterStatus;
+    return matchesSearch && matchesStatus;
+  });
+
+  const filteredMyEvents = myEvents.filter(event => {
     const matchesSearch = event.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          event.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = filterStatus === 'all' || event.status === filterStatus;
@@ -264,14 +306,18 @@ const Dashboard = ({ user, onLogout }) => {
             Overview
           </button>
           <button 
-            className={`${styles.navItem} ${activeTab === 'events' ? styles.active : ''}`}
-            onClick={() => {
-              setActiveTab('events');
-              navigate('/events');
-            }}
+            className={`${styles.navItem} ${activeTab === 'all-events' ? styles.active : ''}`}
+            onClick={() => setActiveTab('all-events')}
           >
             <span className={styles.navIcon}>📅</span>
-            Events
+            All Events
+          </button>
+          <button 
+            className={`${styles.navItem} ${activeTab === 'my-events' ? styles.active : ''}`}
+            onClick={() => setActiveTab('my-events')}
+          >
+            <span className={styles.navIcon}>🗓️</span>
+            My Events
           </button>
           <button 
             className={`${styles.navItem} ${activeTab === 'volunteer' ? styles.active : ''}`}
@@ -433,10 +479,70 @@ const Dashboard = ({ user, onLogout }) => {
             </>
           )}
 
-          {activeTab === 'events' && (
+          {activeTab === 'all-events' && (
             <section className={styles.allEventsSection}>
               <div className={styles.sectionHeader}>
                 <h2>All Events</h2>
+                <div className={styles.filterButtons}>
+                  <button
+                    className={`${styles.filterButton} ${filterStatus === 'all' ? styles.active : ''}`}
+                    onClick={() => setFilterStatus('all')}
+                  >
+                    All
+                  </button>
+                  <button
+                    className={`${styles.filterButton} ${filterStatus === 'active' ? styles.active : ''}`}
+                    onClick={() => setFilterStatus('active')}
+                  >
+                    Active
+                  </button>
+                  <button
+                    className={`${styles.filterButton} ${filterStatus === 'upcoming' ? styles.active : ''}`}
+                    onClick={() => setFilterStatus('upcoming')}
+                  >
+                    Upcoming
+                  </button>
+                </div>
+              </div>
+              <div className={styles.eventsGrid}>
+                {loading ? (
+                  <div className={styles.loadingContainer}>
+                    <div className={styles.loader}></div>
+                    <p>Loading events...</p>
+                  </div>
+                ) : error ? (
+                  <div className={styles.errorContainer}>
+                    <p className={styles.errorMessage}>{error}</p>
+                    <button 
+                      onClick={fetchEvents}
+                      className={styles.retryButton}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : filteredEvents.length === 0 ? (
+                  <div className={styles.noEvents}>
+                    <p>No events found matching your criteria</p>
+                    <p className={styles.noEventsSubtext}>Try adjusting your search or filters</p>
+                  </div>
+                ) : (
+                  filteredEvents.map(event => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      onJoinEvent={handleJoinEvent}
+                      onViewDetails={handleViewEventDetails}
+                    />
+                  ))
+                )}
+              </div>
+            </section>
+          )}
+
+          {activeTab === 'my-events' && (
+            <section className={styles.allEventsSection}>
+              <div className={styles.sectionHeader}>
+                <h2>My Events</h2>
                 <button 
                   className={styles.createEventButton}
                   onClick={handleCreateEventClick}
@@ -461,12 +567,18 @@ const Dashboard = ({ user, onLogout }) => {
                       Retry
                     </button>
                   </div>
-                ) : filteredEvents.length === 0 ? (
+                ) : filteredMyEvents.length === 0 ? (
                   <div className={styles.noEvents}>
-                    <p>No events found</p>
+                    <p>You haven't created any events yet</p>
+                    <button 
+                      className={styles.createFirstEventButton}
+                      onClick={handleCreateEventClick}
+                    >
+                      Create Your First Event
+                    </button>
                   </div>
                 ) : (
-                  filteredEvents.map(event => (
+                  filteredMyEvents.map(event => (
                     <EventCard
                       key={event.id}
                       event={event}

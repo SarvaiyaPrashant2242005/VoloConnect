@@ -100,7 +100,7 @@ const VolunteerSignup = () => {
         setSuccess(true);
         setOpenSnackbar(true);
         setTimeout(() => {
-          navigate('/dashboard/volunteer-history');
+          navigate('/volunteer-history');
         }, 2000);
       }
     } catch (err) {

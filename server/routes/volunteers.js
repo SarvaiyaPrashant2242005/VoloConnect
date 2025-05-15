@@ -216,4 +216,51 @@ router.get('/stats', authenticateUser, async (req, res) => {
   }
 });
 
+// Get volunteer history for the authenticated user
+router.get('/history', authenticateUser, async (req, res) => {
+  try {
+    const userId = req.user.id;
+
+    // Get all volunteer events for this user with event details
+    const [history] = await pool.query(
+      `SELECT 
+        ev.id,
+        ev.event_id,
+        ev.skills,
+        ev.available_hours,
+        ev.special_needs,
+        ev.notes,
+        ev.status,
+        ev.feedback,
+        ev.hours_contributed,
+        ev.created_at,
+        e.title,
+        e.description,
+        e.location,
+        e.start_date,
+        e.end_date,
+        e.organizer_id,
+        e.max_volunteers
+      FROM event_volunteers ev
+      JOIN events e ON ev.event_id = e.id
+      WHERE ev.volunteer_id = ?
+      ORDER BY e.start_date DESC`,
+      [userId]
+    );
+
+    res.json({
+      success: true,
+      count: history.length,
+      data: history
+    });
+  } catch (error) {
+    console.error('Error fetching volunteer history:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching volunteer history',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router;
