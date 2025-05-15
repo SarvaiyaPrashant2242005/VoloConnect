@@ -6,7 +6,8 @@ export const eventService = {
       const response = await api.post('/api/events', eventData);
       return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error('Event creation error:', error.response || error);
+      throw error.response?.data?.message || error.message || 'Failed to create event';
     }
   },
 
@@ -15,7 +16,8 @@ export const eventService = {
       const response = await api.get('/api/events');
       return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error('Error fetching events:', error.response || error);
+      throw error.response?.data?.message || error.message || 'Failed to fetch events';
     }
   },
 
@@ -24,7 +26,8 @@ export const eventService = {
       const response = await api.get(`/api/events/${id}`);
       return response.data;
     } catch (error) {
-      throw error.response?.data || error.message;
+      console.error('Error fetching event details:', error.response || error);
+      throw error.response?.data?.message || error.message || 'Failed to fetch event details';
     }
   }
 }; 

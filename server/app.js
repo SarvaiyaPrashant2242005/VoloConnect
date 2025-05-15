@@ -9,8 +9,8 @@ app.use(cors());
 app.use(express.json());
 
 // API routes
-app.use('/api', volunteerRoutes);
-app.use('/api', eventRoutes);
+app.use('/api/volunteers', volunteerRoutes);
+app.use('/api/events', eventRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -25,4 +25,6 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-}); 
+});
+
+module.exports = app; 

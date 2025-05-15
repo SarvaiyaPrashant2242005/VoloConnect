@@ -115,7 +115,7 @@ const RegisterForm = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      const response = await api.post('/voloconnect/auth/register', {
+      const response = await api.post('/api/auth/register', {
         ...formData,
         skills: formData.skills,
       });

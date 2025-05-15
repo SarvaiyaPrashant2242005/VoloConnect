@@ -48,7 +48,7 @@ const LoginForm = ({ onLogin }) => {
     setLoading(true);
 
     try {
-      const response = await api.post('/auth/login', formData);
+      const response = await api.post('/api/auth/login', formData);
       if (response.data.success) {
         // Make sure skills are properly formatted before storing
         const user = {
