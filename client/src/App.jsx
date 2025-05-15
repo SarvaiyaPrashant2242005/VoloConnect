@@ -5,7 +5,7 @@ import Dashboard from './components/dashboard/dashboard'
 import LoginForm from './components/auth/LoginForm'
 import RegisterForm from './components/auth/RegisterForm'
 import CreateEvent from './components/dashboard/CreateEvent'
-import Events, { EventDetail } from './components/Events'
+import Events from './components/Events'
 import VolunteerSignup from './components/volunteer/VolunteerSignup'
 import VolunteerHistory from './components/volunteer/VolunteerHistory'
 import VolunteerManagement from './components/volunteer/VolunteerManagement'
@@ -13,6 +13,7 @@ import ExportVolunteers from './components/volunteer/ExportVolunteers'
 import EventEdit from './components/events/EventEdit'
 import { AuthProvider, AuthContext } from './context/AuthContext.jsx'
 import './App.css'
+import EventDetail from './components/events/EventDetail'
 
 // Protected route wrapper
 const ProtectedRoute = ({ element }) => {

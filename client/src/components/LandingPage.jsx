@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import styles from '../styles/LandingPage.module.css';
+import PropTypes from 'prop-types';
 
 const LandingPage = () => {
   return (
@@ -102,6 +103,10 @@ const LandingPage = () => {
       </footer>
     </div>
   );
+};
+
+LandingPage.propTypes = {
+  // Add any necessary prop types here
 };
 
 export default LandingPage; 
