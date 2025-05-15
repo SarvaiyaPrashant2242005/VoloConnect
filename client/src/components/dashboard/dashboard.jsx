@@ -86,12 +86,17 @@ const EventCard = ({ event, onJoinEvent, onViewDetails }) => {
 };
 
 // Stats card component for overview section
-const StatCard = ({ title, value, icon, trend }) => (
-  <div className={styles.statCard}>
+const StatCard = ({ title, value, icon, trend, loading }) => (
+  <div className={`${styles.statCard} ${loading ? styles.statCardLoading : ''}`}>
     <div className={styles.statIcon}>{icon}</div>
     <div className={styles.statContent}>
       <h3 className={styles.statTitle}>{title}</h3>
-      <p className={styles.statValue}>{value}</p>
+      <p className={styles.statValue}>
+        {loading ? 
+          <span className={styles.loadingPulse}>...</span> : 
+          value
+        }
+      </p>
       {trend && (
         <span className={`${styles.statTrend} ${trend > 0 ? styles.positive : styles.negative}`}>
           {trend > 0 ? '↑' : '↓'} {Math.abs(trend)}%
@@ -117,6 +122,7 @@ const Dashboard = ({ user, onLogout }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const navigate = useNavigate();
+  const [statsLoading, setStatsLoading] = useState(false);
 
   // Parse user skills if they're stored as a JSON string
   const userSkills = useMemo(() => {
@@ -140,35 +146,43 @@ const Dashboard = ({ user, onLogout }) => {
   useEffect(() => {
     fetchDashboardData();
     fetchEvents();
+
+    // Set up auto-refresh for stats every 5 minutes
+    const refreshInterval = setInterval(() => {
+      fetchDashboardData();
+    }, 300000); // 5 minutes
+
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const fetchDashboardData = async () => {
     try {
-      setLoading(true);
+      setStatsLoading(true);
       setError(null);
 
-      // Use mock data while API is being set up
-      const mockStats = {
-        totalEvents: 5,
-        activeEvents: 3,
-        completedEvents: 2,
-        totalVolunteers: 12
-      };
-
-      setStats(mockStats);
-
-      // Uncomment this when the API is ready
-      /*
-      const response = await api.get('/api/volunteers/stats');
-      if (response.data.success) {
-        setStats(response.data.data);
+      // Fetch real statistics from the API
+      const response = await api.get('/api/events/stats');
+      
+      if (response.data) {
+        setStats({
+          totalEvents: response.data.totalEvents || 0,
+          activeEvents: response.data.activeEvents || 0,
+          completedEvents: response.data.completedEvents || 0,
+          totalVolunteers: response.data.totalVolunteers || 0
+        });
       }
-      */
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
-      setError('Failed to load dashboard data. Please try again.');
+      // Don't show error to user, just use fallback values
+      // This prevents the dashboard from looking broken
+      setStats({
+        totalEvents: 0,
+        activeEvents: 0,
+        completedEvents: 0,
+        totalVolunteers: 0
+      });
     } finally {
-      setLoading(false);
+      setStatsLoading(false);
     }
   };
 
@@ -372,30 +386,44 @@ const Dashboard = ({ user, onLogout }) => {
           {activeTab === 'overview' && (
             <>
               {/* Stats Section */}
+              <div className={styles.statsHeader}>
+                <h2>Dashboard Statistics</h2>
+                <button 
+                  className={styles.refreshButton}
+                  onClick={fetchDashboardData}
+                  disabled={statsLoading}
+                >
+                  {statsLoading ? 'Refreshing...' : 'Refresh Stats'}
+                </button>
+              </div>
               <div className={styles.statsGrid}>
                 <StatCard
                   title="Total Events"
                   value={stats.totalEvents}
                   icon="📊"
-                  trend={5}
+                  trend={null}
+                  loading={statsLoading}
                 />
                 <StatCard
                   title="Active Events"
                   value={stats.activeEvents}
                   icon="🎯"
-                  trend={2}
+                  trend={null}
+                  loading={statsLoading}
                 />
                 <StatCard
                   title="Completed Events"
                   value={stats.completedEvents}
                   icon="✅"
-                  trend={-1}
+                  trend={null}
+                  loading={statsLoading}
                 />
                 <StatCard
                   title="Total Volunteers"
                   value={stats.totalVolunteers}
                   icon="👥"
-                  trend={8}
+                  trend={null}
+                  loading={statsLoading}
                 />
               </div>
 

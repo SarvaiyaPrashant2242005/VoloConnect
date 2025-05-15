@@ -68,6 +68,41 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get dashboard stats - moved above parameter routes to avoid conflicts
+router.get('/stats', async (req, res) => {
+  try {
+    // Get total events
+    const [totalEventsQuery] = await pool.query('SELECT COUNT(*) as total FROM events');
+    
+    // Get active events
+    const [activeEventsQuery] = await pool.query(
+      "SELECT COUNT(*) as active FROM events WHERE status = 'active'"
+    );
+    
+    // Get completed events
+    const [completedEventsQuery] = await pool.query(
+      "SELECT COUNT(*) as completed FROM events WHERE status = 'completed'"
+    );
+    
+    // Get total volunteers (unique volunteers across all events)
+    const [totalVolunteersQuery] = await pool.query(
+      'SELECT COUNT(DISTINCT volunteer_id) as total FROM event_volunteers'
+    );
+
+    const stats = {
+      totalEvents: totalEventsQuery[0]?.total || 0,
+      activeEvents: activeEventsQuery[0]?.active || 0,
+      completedEvents: completedEventsQuery[0]?.completed || 0,
+      totalVolunteers: totalVolunteersQuery[0]?.total || 0
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    res.status(500).json({ error: 'Failed to fetch statistics', message: error.message });
+  }
+});
+
 // Get events created by the current user (My Events)
 router.get('/my-events', authenticateUser, async (req, res) => {
   try {
@@ -342,40 +377,6 @@ router.get('/events/stats', authenticateUser, async (req, res) => {
       message: 'Error fetching event statistics',
       error: error.message
     });
-  }
-});
-
-router.get('/stats', async (req, res) => {
-  try {
-    // Get total events
-    const totalEventsQuery = await pool.query('SELECT COUNT(*) as total FROM events');
-    
-    // Get active events
-    const activeEventsQuery = await pool.query(
-      "SELECT COUNT(*) as active FROM events WHERE status = 'active'"
-    );
-    
-    // Get completed events
-    const completedEventsQuery = await pool.query(
-      "SELECT COUNT(*) as completed FROM events WHERE status = 'completed'"
-    );
-    
-    // Get total volunteers (unique volunteers across all events)
-    const totalVolunteersQuery = await pool.query(
-      'SELECT COUNT(DISTINCT volunteer_id) as total FROM event_volunteers'
-    );
-
-    const stats = {
-      totalEvents: parseInt(totalEventsQuery.rows[0].total),
-      activeEvents: parseInt(activeEventsQuery.rows[0].active),
-      completedEvents: parseInt(completedEventsQuery.rows[0].completed),
-      totalVolunteers: parseInt(totalVolunteersQuery.rows[0].total)
-    };
-
-    res.json(stats);
-  } catch (error) {
-    console.error('Error fetching stats:', error);
-    res.status(500).json({ error: 'Failed to fetch statistics' });
   }
 });
 
