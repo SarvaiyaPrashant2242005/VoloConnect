@@ -73,8 +73,40 @@
   
   .formGroup input.inputError,
   .formGroup select.inputError,
-  .formGroup textarea.inputError {
+  .formGroup textarea.inputError,
+  .skillsContainer.inputError {
     border-color: #ff4d4d;
+    background-color: rgba(255, 77, 77, 0.05);
+  }
+  
+  .fieldError {
+    color: #ff4d4d;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease-in-out;
+  }
+  
+  .fieldHelp {
+    color: #888;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  .error {
+    background-color: rgba(255, 77, 77, 0.1);
+    color: #ff4d4d;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+    border-left: 3px solid #ff4d4d;
+    animation: fadeIn 0.3s ease-in-out;
   }
   
   .skillsContainer {
@@ -96,6 +128,10 @@
     font-size: 0.9rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    user-select: none;
+    display: inline-block;
+    border: none;
+    text-align: center;
   }
   
   .skillChip:hover {
@@ -107,69 +143,66 @@
     color: white;
   }
   
-  .skillChipSelected:hover {
-    background-color: #535bf2;
-  }
-  
-  .error {
-    color: #ff4d4d;
-    font-size: 0.8rem;
-    margin-top: 0.25rem;
-  }
-  
-  .submitButton {
-    padding: 1rem;
+  .button {
     background-color: #646cff;
     color: white;
     border: none;
     border-radius: 8px;
+    padding: 0.875rem;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.2s ease;
     margin-top: 1rem;
   }
   
-  .submitButton:hover {
+  .button:hover {
     background-color: #535bf2;
-    transform: translateY(-1px);
+    transform: translateY(-2px);
   }
   
-  .submitButton:disabled {
-    background-color: #4a4a4a;
+  .button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.5);
+  }
+  
+  .button:disabled {
+    background-color: #444;
+    color: #999;
     cursor: not-allowed;
     transform: none;
   }
   
-  /* Animation for loading state */
-  @keyframes pulse {
-    0% {
-      opacity: 1;
-    }
-    50% {
-      opacity: 0.5;
-    }
-    100% {
-      opacity: 1;
-    }
+  .formFooter {
+    margin-top: 1rem;
+    text-align: center;
+    color: #a0a0a0;
+    font-size: 0.9rem;
   }
   
-  .submitButton:disabled {
-    animation: pulse 1.5s infinite;
+  .link {
+    color: #646cff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: all 0.2s ease;
   }
   
-  /* Responsive adjustments */
-  @media (max-width: 768px) {
+  .link:hover {
+    color: #535bf2;
+    text-decoration: underline;
+  }
+  
+  @media (max-width: 640px) {
     .formContainer {
-      margin: 1rem;
       padding: 1.5rem;
+      margin: 1rem;
     }
   
     .formRow {
       grid-template-columns: 1fr;
     }
   
-    .skillsContainer {
-      min-height: 150px;
+    .title {
+      font-size: 1.5rem;
     }
   }

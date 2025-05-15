@@ -38,8 +38,34 @@ const RegisterForm = ({ onLogin }) => {
     phone: '',
     skills: [],
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({
+    first_name: '',
+    last_name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+    organization: '',
+    phone: '',
+    skills: '',
+  });
   const [loading, setLoading] = useState(false);
+
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  const validatePassword = (password) => {
+    // At least 8 chars, including one uppercase, one lowercase, one number and one special character
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/? ])[A-Za-z\d!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/? ]{8,}$/;
+    return passwordRegex.test(password);
+  };
+
+  const validatePhone = (phone) => {
+    // Basic phone validation (at least 10 digits)
+    const phoneRegex = /^\+?[\d\s\(\)-]{10,}$/;
+    return phoneRegex.test(phone);
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -47,66 +73,126 @@ const RegisterForm = ({ onLogin }) => {
       ...prev,
       [name]: value
     }));
-    // Clear error when user starts typing
-    if (error) setError('');
+
+    // Real-time validation
+    validateField(name, value);
+  };
+
+  const validateField = (name, value) => {
+    let errorMessage = '';
+
+    switch (name) {
+      case 'first_name':
+        if (!value.trim()) {
+          errorMessage = 'First name is required';
+        } else if (value.trim().length < 2) {
+          errorMessage = 'First name must be at least 2 characters';
+        }
+        break;
+      case 'last_name':
+        if (!value.trim()) {
+          errorMessage = 'Last name is required';
+        } else if (value.trim().length < 2) {
+          errorMessage = 'Last name must be at least 2 characters';
+        }
+        break;
+      case 'email':
+        if (!value.trim()) {
+          errorMessage = 'Email is required';
+        } else if (!validateEmail(value)) {
+          errorMessage = 'Please enter a valid email address';
+        }
+        break;
+      case 'password':
+        if (!value) {
+          errorMessage = 'Password is required';
+        } else if (value.length < 8) {
+          errorMessage = 'Password must be at least 8 characters long';
+        } else if (!validatePassword(value)) {
+          errorMessage = 'Password must include uppercase, lowercase, number and special character';
+        }
+        break;
+      case 'confirmPassword':
+        if (!value) {
+          errorMessage = 'Please confirm your password';
+        } else if (value !== formData.password) {
+          errorMessage = 'Passwords do not match';
+        }
+        break;
+      case 'organization':
+        if (!value.trim()) {
+          errorMessage = 'Organization is required';
+        } else if (value.trim().length < 2) {
+          errorMessage = 'Organization name must be at least 2 characters';
+        }
+        break;
+      case 'phone':
+        if (!value.trim()) {
+          errorMessage = 'Phone number is required';
+        } else if (!validatePhone(value)) {
+          errorMessage = 'Please enter a valid phone number (min. 10 digits)';
+        }
+        break;
+      default:
+        break;
+    }
+
+    setErrors(prev => ({
+      ...prev,
+      [name]: errorMessage
+    }));
+
+    return !errorMessage;
   };
 
   const handleSkillToggle = (skill) => {
+    const updatedSkills = formData.skills.includes(skill)
+      ? formData.skills.filter(s => s !== skill)
+      : [...formData.skills, skill];
+    
     setFormData(prev => ({
       ...prev,
-      skills: prev.skills.includes(skill)
-        ? prev.skills.filter(s => s !== skill)
-        : [...prev.skills, skill]
+      skills: updatedSkills
     }));
+
+    // Validate skills
+    if (updatedSkills.length === 0) {
+      setErrors(prev => ({
+        ...prev,
+        skills: 'Please select at least one skill'
+      }));
+    } else {
+      setErrors(prev => ({
+        ...prev,
+        skills: ''
+      }));
+    }
   };
 
   const validateForm = () => {
-    if (!formData.first_name) {
-      setError('First name is required');
-      return false;
-    }
-    if (!formData.last_name) {
-      setError('Last name is required');
-      return false;
-    }
-    if (!formData.email) {
-      setError('Email is required');
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-    if (!formData.password) {
-      setError('Password is required');
-      return false;
-    }
-    if (formData.password.length < 6) {
-      setError('Password must be at least 6 characters long');
-      return false;
-    }
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match');
-      return false;
-    }
-    if (!formData.organization) {
-      setError('Organization is required');
-      return false;
-    }
-    if (!formData.phone) {
-      setError('Phone number is required');
-      return false;
-    }
-    if (formData.skills.length === 0) {
-      setError('Please select at least one skill');
-      return false;
-    }
-    return true;
+    // Validate all fields
+    let isValid = true;
+    let newErrors = { ...errors };
+    
+    // Validate each field
+    Object.keys(formData).forEach(field => {
+      if (field === 'skills') {
+        if (formData.skills.length === 0) {
+          newErrors.skills = 'Please select at least one skill';
+          isValid = false;
+        }
+      } else {
+        const fieldValid = validateField(field, formData[field]);
+        if (!fieldValid) isValid = false;
+      }
+    });
+    
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     
     if (!validateForm()) {
       return;
@@ -128,7 +214,18 @@ const RegisterForm = ({ onLogin }) => {
       // Navigate to dashboard
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      // Handle specific error codes
+      if (err.response?.status === 409) {
+        setErrors(prev => ({
+          ...prev,
+          email: 'This email is already registered'
+        }));
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          form: err.response?.data?.message || 'Registration failed. Please try again.'
+        }));
+      }
     } finally {
       setLoading(false);
     }
@@ -137,7 +234,7 @@ const RegisterForm = ({ onLogin }) => {
   return (
     <div className={styles.formContainer}>
       <h2 className={styles.title}>Create Account</h2>
-      {error && <div className={styles.error}>{error}</div>}
+      {errors.form && <div className={styles.error}>{errors.form}</div>}
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.formRow}>
           <div className={styles.formGroup}>
@@ -148,10 +245,10 @@ const RegisterForm = ({ onLogin }) => {
               name="first_name"
               value={formData.first_name}
               onChange={handleChange}
-              required
-              className={styles.input}
+              className={`${styles.input} ${errors.first_name ? styles.inputError : ''}`}
               placeholder="Enter your first name"
             />
+            {errors.first_name && <div className={styles.fieldError}>{errors.first_name}</div>}
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="last_name">Last Name</label>
@@ -161,10 +258,10 @@ const RegisterForm = ({ onLogin }) => {
               name="last_name"
               value={formData.last_name}
               onChange={handleChange}
-              required
-              className={styles.input}
+              className={`${styles.input} ${errors.last_name ? styles.inputError : ''}`}
               placeholder="Enter your last name"
             />
+            {errors.last_name && <div className={styles.fieldError}>{errors.last_name}</div>}
           </div>
         </div>
 
@@ -176,10 +273,10 @@ const RegisterForm = ({ onLogin }) => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            required
-            className={styles.input}
+            className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
             placeholder="Enter your email"
           />
+          {errors.email && <div className={styles.fieldError}>{errors.email}</div>}
         </div>
 
         <div className={styles.formRow}>
@@ -191,10 +288,10 @@ const RegisterForm = ({ onLogin }) => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              required
-              className={styles.input}
+              className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
               placeholder="Enter your password"
             />
+            {errors.password && <div className={styles.fieldError}>{errors.password}</div>}
           </div>
           <div className={styles.formGroup}>
             <label htmlFor="confirmPassword">Confirm Password</label>
@@ -204,10 +301,10 @@ const RegisterForm = ({ onLogin }) => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              required
-              className={styles.input}
+              className={`${styles.input} ${errors.confirmPassword ? styles.inputError : ''}`}
               placeholder="Confirm your password"
             />
+            {errors.confirmPassword && <div className={styles.fieldError}>{errors.confirmPassword}</div>}
           </div>
         </div>
 
@@ -219,10 +316,10 @@ const RegisterForm = ({ onLogin }) => {
             name="organization"
             value={formData.organization}
             onChange={handleChange}
-            required
-            className={styles.input}
+            className={`${styles.input} ${errors.organization ? styles.inputError : ''}`}
             placeholder="Enter your organization"
           />
+          {errors.organization && <div className={styles.fieldError}>{errors.organization}</div>}
         </div>
 
         <div className={styles.formGroup}>
@@ -233,28 +330,29 @@ const RegisterForm = ({ onLogin }) => {
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            required
-            className={styles.input}
+            className={`${styles.input} ${errors.phone ? styles.inputError : ''}`}
             placeholder="Enter your phone number"
           />
+          {errors.phone && <div className={styles.fieldError}>{errors.phone}</div>}
+          <div className={styles.fieldHelp}>Format: +1 (555) 123-4567 or 5551234567</div>
         </div>
 
         <div className={styles.formGroup}>
           <label>Skills</label>
-          <div className={styles.skillsContainer}>
-            {SKILLS_OPTIONS.map(skill => (
-              <button
+          <div className={`${styles.skillsContainer} ${errors.skills ? styles.inputError : ''}`}>
+            {SKILLS_OPTIONS.map((skill) => (
+              <span
                 key={skill}
-                type="button"
                 onClick={() => handleSkillToggle(skill)}
                 className={`${styles.skillChip} ${
-                  formData.skills.includes(skill) ? styles.selected : ''
+                  formData.skills.includes(skill) ? styles.skillChipSelected : ''
                 }`}
               >
                 {skill}
-              </button>
+              </span>
             ))}
           </div>
+          {errors.skills && <div className={styles.fieldError}>{errors.skills}</div>}
         </div>
 
         <button
@@ -262,7 +360,7 @@ const RegisterForm = ({ onLogin }) => {
           className={styles.button}
           disabled={loading}
         >
-          {loading ? 'Creating Account...' : 'Create Account'}
+          {loading ? 'Creating account...' : 'Create Account'}
         </button>
         <div className={styles.formFooter}>
           <p>

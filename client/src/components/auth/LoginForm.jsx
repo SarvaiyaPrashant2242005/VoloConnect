@@ -9,37 +9,90 @@ const LoginForm = ({ onLogin }) => {
     email: '',
     password: '',
   });
-  const [error, setError] = useState('');
+  const [errors, setErrors] = useState({
+    email: '',
+    password: '',
+    form: ''
+  });
   const [loading, setLoading] = useState(false);
 
+  const validateEmail = (email) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
   const handleChange = (e) => {
+    const { name, value } = e.target;
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value,
+      [name]: value,
     });
-    // Clear error when user starts typing
-    if (error) setError('');
+    
+    // Clear field error when user starts typing
+    if (errors[name]) {
+      setErrors(prev => ({
+        ...prev,
+        [name]: ''
+      }));
+    }
+    
+    // Clear form error when any field changes
+    if (errors.form) {
+      setErrors(prev => ({
+        ...prev,
+        form: ''
+      }));
+    }
+    
+    // Real-time validation
+    validateField(name, value);
+  };
+
+  const validateField = (name, value) => {
+    let errorMessage = '';
+
+    switch (name) {
+      case 'email':
+        if (!value.trim()) {
+          errorMessage = 'Email is required';
+        } else if (!validateEmail(value)) {
+          errorMessage = 'Please enter a valid email address';
+        }
+        break;
+      case 'password':
+        if (!value) {
+          errorMessage = 'Password is required';
+        }
+        break;
+      default:
+        break;
+    }
+
+    setErrors(prev => ({
+      ...prev,
+      [name]: errorMessage
+    }));
+
+    return !errorMessage;
   };
 
   const validateForm = () => {
-    if (!formData.email) {
-      setError('Email is required');
-      return false;
-    }
-    if (!formData.password) {
-      setError('Password is required');
-      return false;
-    }
-    if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      setError('Please enter a valid email address');
-      return false;
-    }
-    return true;
+    // Validate all fields
+    let isValid = true;
+    let newErrors = { ...errors };
+    
+    // Validate each field
+    Object.keys(formData).forEach(field => {
+      const fieldValid = validateField(field, formData[field]);
+      if (!fieldValid) isValid = false;
+    });
+    
+    setErrors(newErrors);
+    return isValid;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
     
     if (!validateForm()) {
       return;
@@ -57,7 +110,24 @@ const LoginForm = ({ onLogin }) => {
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
-      setError(error.response?.data?.message || 'Login failed. Please try again.');
+      
+      // Handle specific error codes
+      if (error.response?.status === 401) {
+        setErrors(prev => ({
+          ...prev,
+          form: 'Invalid email or password'
+        }));
+      } else if (error.response?.status === 404) {
+        setErrors(prev => ({
+          ...prev,
+          email: 'Account not found'
+        }));
+      } else {
+        setErrors(prev => ({
+          ...prev,
+          form: error.response?.data?.message || 'Login failed. Please try again.'
+        }));
+      }
     } finally {
       setLoading(false);
     }
@@ -66,7 +136,7 @@ const LoginForm = ({ onLogin }) => {
   return (
     <div className={styles.formContainer}>
       <h2 className={styles.title}>Welcome Back</h2>
-      {error && <div className={styles.error}>{error}</div>}
+      {errors.form && <div className={styles.error}>{errors.form}</div>}
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.formGroup}>
           <label htmlFor="email">Email</label>
@@ -76,10 +146,10 @@ const LoginForm = ({ onLogin }) => {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            required
-            className={styles.input}
+            className={`${styles.input} ${errors.email ? styles.inputError : ''}`}
             placeholder="Enter your email"
           />
+          {errors.email && <div className={styles.fieldError}>{errors.email}</div>}
         </div>
         <div className={styles.formGroup}>
           <label htmlFor="password">Password</label>
@@ -89,10 +159,10 @@ const LoginForm = ({ onLogin }) => {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            required
-            className={styles.input}
+            className={`${styles.input} ${errors.password ? styles.inputError : ''}`}
             placeholder="Enter your password"
           />
+          {errors.password && <div className={styles.fieldError}>{errors.password}</div>}
         </div>
         <button
           type="submit"
