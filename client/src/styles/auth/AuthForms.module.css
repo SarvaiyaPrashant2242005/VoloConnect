@@ -1,0 +1,175 @@
+.formContainer {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2.5rem;
+    background-color: #1a1a1a;
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  }
+  
+  .title {
+    color: #ffffff;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    font-weight: 600;
+  }
+  
+  .subtitle {
+    color: #a0a0a0;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    font-size: 1rem;
+  }
+  
+  .form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .formRow {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  
+  .formGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .formGroup label {
+    color: #e0e0e0;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+  
+  .formGroup input,
+  .formGroup select,
+  .formGroup textarea {
+    padding: 0.875rem;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #2a2a2a;
+    color: #ffffff;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+  }
+  
+  .formGroup input:focus,
+  .formGroup select:focus,
+  .formGroup textarea:focus {
+    outline: none;
+    border-color: #646cff;
+    box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+  }
+  
+  .formGroup input::placeholder,
+  .formGroup textarea::placeholder {
+    color: #666;
+  }
+  
+  .formGroup input.inputError,
+  .formGroup select.inputError,
+  .formGroup textarea.inputError {
+    border-color: #ff4d4d;
+  }
+  
+  .skillsContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    border: 1px solid #333;
+    border-radius: 8px;
+    background-color: #2a2a2a;
+    min-height: 100px;
+  }
+  
+  .skillChip {
+    padding: 0.5rem 1rem;
+    background-color: #333;
+    color: #e0e0e0;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .skillChip:hover {
+    background-color: #444;
+  }
+  
+  .skillChipSelected {
+    background-color: #646cff;
+    color: white;
+  }
+  
+  .skillChipSelected:hover {
+    background-color: #535bf2;
+  }
+  
+  .error {
+    color: #ff4d4d;
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+  }
+  
+  .submitButton {
+    padding: 1rem;
+    background-color: #646cff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin-top: 1rem;
+  }
+  
+  .submitButton:hover {
+    background-color: #535bf2;
+    transform: translateY(-1px);
+  }
+  
+  .submitButton:disabled {
+    background-color: #4a4a4a;
+    cursor: not-allowed;
+    transform: none;
+  }
+  
+  /* Animation for loading state */
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.5;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+  
+  .submitButton:disabled {
+    animation: pulse 1.5s infinite;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .formContainer {
+      margin: 1rem;
+      padding: 1.5rem;
+    }
+  
+    .formRow {
+      grid-template-columns: 1fr;
+    }
+  
+    .skillsContainer {
+      min-height: 150px;
+    }
+  }

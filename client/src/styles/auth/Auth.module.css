@@ -1,0 +1,45 @@
+.authContainer {
+  width: 100%;
+  max-width: 500px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.toggleContainer {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.toggleButton {
+  padding: 0.75rem 2rem;
+  background-color: #2a2a2a;
+  color: #e0e0e0;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 1rem;
+}
+
+.toggleButton:hover {
+  background-color: #3a3a3a;
+}
+
+.toggleButton.active {
+  background-color: #646cff;
+  color: white;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .authContainer {
+    margin: 1rem;
+    padding: 0.5rem;
+  }
+
+  .toggleButton {
+    padding: 0.5rem 1.5rem;
+  }
+} 
