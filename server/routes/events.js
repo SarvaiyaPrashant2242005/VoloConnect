@@ -290,4 +290,237 @@ router.get('/stats', async (req, res) => {
   }
 });
 
+// Volunteer for an event
+router.post('/:id/volunteer', authenticateUser, async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const volunteerId = req.user.id;
+    const { availableHours, specialNeeds, notes, skills } = req.body;
+
+    // Check if event exists and is active
+    const [events] = await pool.query(
+      `SELECT id, max_volunteers, status,
+        (SELECT COUNT(*) FROM event_volunteers WHERE event_id = events.id AND status = 'approved') as current_volunteers
+       FROM events 
+       WHERE id = ? AND status = 'active'`,
+      [eventId]
+    );
+
+    if (events.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found or not active'
+      });
+    }
+
+    const event = events[0];
+    if (event.current_volunteers >= event.max_volunteers) {
+      return res.status(400).json({
+        success: false,
+        message: 'Event has reached maximum volunteer capacity'
+      });
+    }
+
+    // Check if already applied
+    const [existingApplication] = await pool.query(
+      'SELECT id FROM event_volunteers WHERE event_id = ? AND volunteer_id = ?',
+      [eventId, volunteerId]
+    );
+
+    if (existingApplication.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'You have already volunteered for this event'
+      });
+    }
+
+    // Insert volunteer application
+    const [result] = await pool.query(
+      `INSERT INTO event_volunteers (
+        event_id,
+        volunteer_id,
+        skills,
+        available_hours,
+        special_needs,
+        notes,
+        status,
+        created_at
+      ) VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())`,
+      [
+        eventId,
+        volunteerId,
+        skills,
+        availableHours,
+        specialNeeds || null,
+        notes || null
+      ]
+    );
+
+    res.status(201).json({
+      success: true,
+      message: 'Volunteer application submitted successfully',
+      data: {
+        id: result.insertId,
+        event_id: eventId,
+        volunteer_id: volunteerId,
+        status: 'pending'
+      }
+    });
+  } catch (error) {
+    console.error('Error submitting volunteer application:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error submitting volunteer application',
+      error: error.message
+    });
+  }
+});
+
+// Get volunteers for a specific event (organizer only)
+router.get('/:id/volunteers', authenticateUser, async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const userId = req.user.id;
+    
+    // Check if user is the event organizer
+    const [events] = await pool.query(
+      'SELECT organizer_id FROM events WHERE id = ?',
+      [eventId]
+    );
+
+    if (events.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
+    }
+
+    if (events[0].organizer_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only event organizers can view volunteer list'
+      });
+    }
+
+    // Get volunteers with their details
+    const [volunteers] = await pool.query(
+      `SELECT 
+        ev.id, 
+        ev.event_id, 
+        ev.volunteer_id, 
+        ev.skills, 
+        ev.available_hours, 
+        ev.special_needs, 
+        ev.notes, 
+        ev.status, 
+        ev.feedback, 
+        ev.hours_contributed, 
+        ev.created_at,
+        u.first_name, 
+        u.last_name, 
+        u.email, 
+        u.phone
+      FROM event_volunteers ev
+      JOIN users u ON ev.volunteer_id = u.id
+      WHERE ev.event_id = ?
+      ORDER BY ev.created_at DESC`,
+      [eventId]
+    );
+
+    // Format the response data
+    const formattedVolunteers = volunteers.map(vol => ({
+      id: vol.id,
+      event_id: vol.event_id,
+      volunteer_id: vol.volunteer_id,
+      volunteer_name: `${vol.first_name} ${vol.last_name}`,
+      volunteer_email: vol.email,
+      volunteer_phone: vol.phone,
+      skills: vol.skills ? JSON.parse(vol.skills) : [],
+      available_hours: vol.available_hours,
+      special_needs: vol.special_needs,
+      notes: vol.notes,
+      status: vol.status,
+      feedback: vol.feedback,
+      hours_contributed: vol.hours_contributed,
+      created_at: vol.created_at
+    }));
+
+    res.json({
+      success: true,
+      count: formattedVolunteers.length,
+      data: formattedVolunteers
+    });
+  } catch (error) {
+    console.error('Error fetching volunteers:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching volunteers',
+      error: error.message
+    });
+  }
+});
+
+// Update volunteer status and feedback
+router.put('/:id/volunteers/:volunteerId', authenticateUser, async (req, res) => {
+  try {
+    const eventId = req.params.id;
+    const volunteerId = req.params.volunteerId;
+    const userId = req.user.id;
+    const { status, feedback } = req.body;
+    
+    // Check if user is the event organizer
+    const [events] = await pool.query(
+      'SELECT organizer_id FROM events WHERE id = ?',
+      [eventId]
+    );
+
+    if (events.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Event not found'
+      });
+    }
+
+    if (events[0].organizer_id !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Only event organizers can update volunteer status'
+      });
+    }
+
+    // Check if volunteer exists for this event
+    const [volunteers] = await pool.query(
+      'SELECT id FROM event_volunteers WHERE id = ? AND event_id = ?',
+      [volunteerId, eventId]
+    );
+
+    if (volunteers.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'Volunteer not found for this event'
+      });
+    }
+
+    // Update volunteer status and feedback
+    const [result] = await pool.query(
+      `UPDATE event_volunteers 
+       SET status = ?, feedback = ?, updated_at = NOW()
+       WHERE id = ? AND event_id = ?`,
+      [status, feedback || null, volunteerId, eventId]
+    );
+
+    res.json({
+      success: true,
+      message: 'Volunteer status updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating volunteer status:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Error updating volunteer status',
+      error: error.message
+    });
+  }
+});
+
 module.exports = router; 

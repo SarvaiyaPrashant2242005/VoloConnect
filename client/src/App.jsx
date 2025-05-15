@@ -6,6 +6,10 @@ import LoginForm from './components/auth/LoginForm'
 import RegisterForm from './components/auth/RegisterForm'
 import CreateEvent from './components/dashboard/CreateEvent'
 import Events from './components/Events'
+import VolunteerSignup from './components/volunteer/VolunteerSignup'
+import VolunteerHistory from './components/volunteer/VolunteerHistory'
+import VolunteerManagement from './components/volunteer/VolunteerManagement'
+import ExportVolunteers from './components/volunteer/ExportVolunteers'
 import './App.css'
 
 // Protected route wrapper
@@ -126,6 +130,39 @@ const App = () => {
             element={
               <ProtectedRoute isAuthenticated={isAuthenticated} element={
                 <CreateEvent user={user} />
+              } />
+            }
+          />
+          {/* Volunteer Routes */}
+          <Route
+            path="/events/:eventId/volunteer"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated} element={
+                <VolunteerSignup user={user} />
+              } />
+            }
+          />
+          <Route
+            path="/volunteer-history"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated} element={
+                <VolunteerHistory user={user} />
+              } />
+            }
+          />
+          <Route
+            path="/events/:eventId/manage-volunteers"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated} element={
+                <VolunteerManagement user={user} />
+              } />
+            }
+          />
+          <Route
+            path="/volunteer-export"
+            element={
+              <ProtectedRoute isAuthenticated={isAuthenticated} element={
+                <ExportVolunteers user={user} />
               } />
             }
           />

@@ -583,3 +583,205 @@
   padding: 1.5rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+
+/* Volunteer Section Styles */
+.volunteersSection {
+  background-color: var(--color-bg-paper);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.volunteerStats {
+  display: flex;
+  justify-content: space-between;
+  margin: 20px 0;
+  flex-wrap: wrap;
+}
+
+.volunteerStat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  background-color: var(--color-bg-paper);
+  border-radius: 8px;
+  min-width: 120px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: transform 0.2s;
+  flex: 1;
+  margin: 0 10px 10px 0;
+}
+
+.volunteerStat:hover {
+  transform: translateY(-3px);
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color-primary);
+}
+
+.statLabel {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-top: 5px;
+}
+
+.volunteerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.actionButton {
+  padding: 10px 15px;
+  background-color: var(--color-primary);
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.actionButton:hover {
+  background-color: var(--color-primary-dark);
+}
+
+.volunteerSection {
+  padding: 20px;
+}
+
+.actionCards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+  margin: 30px 0;
+}
+
+.actionCard {
+  background-color: var(--color-bg-paper);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.actionCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+}
+
+.actionIcon {
+  font-size: 2.5rem;
+  margin-bottom: 15px;
+}
+
+.actionCard h3 {
+  margin: 10px 0;
+  font-size: 1.2rem;
+}
+
+.actionCard p {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.upcomingCommitments {
+  margin-top: 40px;
+}
+
+.commitmentsList {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.commitmentCard {
+  background-color: var(--color-bg-paper);
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s;
+}
+
+.commitmentCard:hover {
+  transform: translateY(-3px);
+}
+
+.commitmentHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.commitmentHeader h4 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.commitmentDate {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+.commitmentFooter {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 15px;
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Dark theme color variables */
+:root {
+  --color-bg-paper: #1e1e2f;
+  --color-text-primary: #ffffff;
+  --color-text-secondary: #b3b3b3;
+  --color-primary: #8a85ff;
+  --color-primary-dark: #6c67cc;
+  --color-success: #4caf50;
+  --color-warning: #ff9800;
+  --color-error: #f44336;
+}
+
+/* Apply dark theme to existing components */
+.dashboardContainer {
+  background-color: #121212;
+  color: var(--color-text-primary);
+}
+
+.sidebar {
+  background-color: #1a1a2e;
+}
+
+.sidebarHeader h2 {
+  color: var(--color-primary);
+}
+
+.navItem {
+  color: var(--color-text-secondary);
+}
+
+.navItem.active, .navItem:hover {
+  background-color: rgba(138, 133, 255, 0.15);
+  color: var(--color-primary);
+}
+
+.content {
+  background-color: #121212;
+}
+
+.statCard, .eventCard, .profileCard {
+  background-color: var(--color-bg-paper);
+  color: var(--color-text-primary);
+}

@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Events.css';
 import { useState, useEffect } from 'react';
-import { Card, CardContent, Typography, Grid, Container, Box, Chip } from '@mui/material';
+import { Card, CardContent, Typography, Grid, Container, Box, Chip, Button } from '@mui/material';
 import { format } from 'date-fns';
 import api from '../config/api';
 
@@ -11,8 +11,16 @@ const Events = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [currentUser, setCurrentUser] = useState(null);
 
   useEffect(() => {
+    // Get current user from session storage
+    const userDataString = sessionStorage.getItem('userData');
+    if (userDataString) {
+      const userData = JSON.parse(userDataString);
+      setCurrentUser(userData);
+    }
+
     const fetchEvents = async () => {
       try {
         const response = await api.get('/api/events');
@@ -115,6 +123,35 @@ const Events = () => {
                     Organized by: {event.first_name} {event.last_name}
                   </Typography>
                 )}
+                <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
+                  <Button 
+                    size="small" 
+                    variant="contained"
+                    color="primary"
+                    onClick={() => navigate(`/events/${event.id}/volunteer`)}
+                  >
+                    Volunteer
+                  </Button>
+                  {/* Show management buttons if user is the organizer */}
+                  {currentUser && (event.organizer_id === currentUser.id) && (
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                      <Button 
+                        size="small" 
+                        variant="outlined"
+                        onClick={() => navigate(`/events/${event.id}/manage-volunteers`)}
+                      >
+                        Manage Volunteers
+                      </Button>
+                      <Button 
+                        size="small" 
+                        variant="outlined"
+                        onClick={() => navigate('/volunteer-export')}
+                      >
+                        Export Data
+                      </Button>
+                    </Box>
+                  )}
+                </Box>
               </CardContent>
             </Card>
           </Grid>
