@@ -1,0 +1,317 @@
+/* client/src/components/dashboard/Dashboard.module.css */
+/* ... (previous styles remain the same) ... */
+
+/* Events Styles */
+.eventsContainer {
+    background-color: var(--card-bg);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+  }
+  
+  .eventsHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .eventsFilter {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .filterButton {
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius-md);
+    color: var(--text-gray);
+    background: none;
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-fast);
+  }
+  
+  .filterButton:hover,
+  .filterButton.active {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border-color: var(--primary-color);
+  }
+  
+  .createEventButton {
+    padding: 0.5rem 1.5rem;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+    border: none;
+    border-radius: var(--radius-md);
+    transition: all var(--transition-fast);
+  }
+  
+  .createEventButton:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+  }
+  
+  .eventsList {
+    display: grid;
+    gap: 1.5rem;
+  }
+  
+  .eventCard {
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  
+  .eventCard:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  }
+  
+  .eventHeader {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+  }
+  
+  .eventTitleSection {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .eventTitle {
+    color: var(--text-light);
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+  
+  .eventId {
+    font-size: 0.75rem;
+    color: var(--text-gray);
+  }
+  
+  .badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.875rem;
+    font-weight: 500;
+  }
+  
+  .statusActive {
+    background-color: var(--success-color);
+    color: var(--text-light);
+  }
+  
+  .statusFull {
+    background-color: var(--warning-color);
+    color: var(--text-dark);
+  }
+  
+  .statusCompleted {
+    background-color: var(--info-color);
+    color: var(--text-light);
+  }
+  
+  .statusCancelled {
+    background-color: var(--danger-color);
+    color: var(--text-light);
+  }
+  
+  .statusPending {
+    background-color: var(--gray-color);
+    color: var(--text-light);
+  }
+  
+  .eventDescription {
+    color: var(--text-gray);
+    margin: 1rem 0;
+    line-height: 1.5;
+  }
+  
+  .eventDetails {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .eventDetail {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-gray);
+  }
+  
+  .detailIcon {
+    font-size: 1.25rem;
+  }
+  
+  .progressContainer {
+    width: 100%;
+    height: 8px;
+    background-color: var(--bg-dark);
+    border-radius: var(--radius-full);
+    margin: 1rem 0;
+    overflow: hidden;
+  }
+  
+  .progressBar {
+    height: 100%;
+    background-color: var(--primary-color);
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+  }
+  
+  .eventSkills {
+    margin: 1rem 0;
+  }
+  
+  .skillsTitle {
+    color: var(--text-light);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .skillsList {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .skillBadge {
+    background-color: var(--primary-color-light);
+    color: var(--primary-color);
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+  
+  .eventActions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .button {
+    padding: 0.5rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: none;
+    background-color: var(--primary-color);
+    color: var(--text-light);
+  }
+  
+  .button:hover:not(:disabled) {
+    transform: translateY(-1px);
+    background-color: var(--primary-color-dark);
+  }
+  
+  .button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .buttonOutline {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+  }
+  
+  .buttonOutline:hover:not(:disabled) {
+    background-color: var(--primary-color);
+    color: var(--text-light);
+  }
+  
+  /* Responsive Grid */
+  .eventsGrid {
+    display: grid;
+    gap: 1.5rem;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  }
+  
+  @media (max-width: 768px) {
+    .eventsGrid {
+      grid-template-columns: 1fr;
+    }
+    
+    .eventDetails {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  /* Loading and Error States */
+  .loadingContainer,
+  .errorContainer {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 200px;
+  }
+  
+  .loadingSpinner {
+    border: 3px solid var(--bg-dark);
+    border-top: 3px solid var(--primary-color);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  
+  /* No Events State */
+  .noEvents {
+    text-align: center;
+    padding: 3rem;
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+  }
+  
+  .noEventsIcon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  /* Event Card Loading and Error States */
+  .eventCardLoading,
+  .eventCardError {
+    background-color: var(--bg-secondary);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    border: 1px solid var(--border-color);
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .eventCardError {
+    color: var(--danger-color);
+    text-align: center;
+  }
+  
+  .eventCardError button {
+    padding: 0.5rem 1rem;
+    background-color: var(--danger-color);
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+  }
+  
+  .eventCardError button:hover {
+    opacity: 0.9;
+  }

@@ -1,0 +1,183 @@
+import React from 'react'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import LandingPage from './components/LandingPage'
+import Dashboard from './components/dashboard/dashboard'
+import LoginForm from './components/auth/LoginForm'
+import RegisterForm from './components/auth/RegisterForm'
+import CreateEvent from './components/dashboard/CreateEvent'
+import Events from './components/Events'
+import VolunteerSignup from './components/volunteer/VolunteerSignup'
+import VolunteerHistory from './components/volunteer/VolunteerHistory'
+import VolunteerManagement from './components/volunteer/VolunteerManagement'
+import ExportVolunteers from './components/volunteer/ExportVolunteers'
+import EventEdit from './components/events/EventEdit'
+import { AuthProvider, AuthContext } from './context/AuthContext.jsx'
+import './App.css'
+import EventDetail from './components/events/EventDetail'
+
+// Protected route wrapper
+const ProtectedRoute = ({ element }) => {
+  const { isAuthenticated } = React.useContext(AuthContext)
+  return isAuthenticated ? element : <Navigate to="/login" />
+}
+
+const App = () => {
+  return (
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
+      <AuthProvider>
+        <AppRoutes />
+      </AuthProvider>
+    </div>
+  )
+}
+
+const AppRoutes = () => {
+  const { isAuthenticated, user, login, logout, loading } = React.useContext(AuthContext)
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '1.5rem'
+      }}>
+        Loading...
+      </div>
+    )
+  }
+
+  return (
+    <Router future={{ 
+      v7_startTransition: true,
+      v7_relativeSplatPath: true 
+    }}>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/events" element={<Events />} />
+        <Route path="/events/:eventId" element={<EventDetail />} />
+        <Route
+          path="/login"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <LoginForm onLogin={login} />
+            )
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            isAuthenticated ? (
+              <Navigate to="/dashboard" replace />
+            ) : (
+              <RegisterForm onLogin={login} />
+            )
+          }
+        />
+        <Route
+          path="/dashboard"
+          element={
+            <ProtectedRoute element={
+              <Dashboard user={user} onLogout={logout} />
+            } />
+          }
+        />
+        <Route
+          path="/dashboard/create-event"
+          element={
+            <ProtectedRoute element={
+              <CreateEvent user={user} />
+            } />
+          }
+        />
+        <Route
+          path="/events/create"
+          element={
+            <ProtectedRoute element={
+              <CreateEvent user={user} />
+            } />
+          }
+        />
+        {/* Volunteer Routes */}
+        <Route
+          path="/events/:eventId/volunteer"
+          element={
+            <ProtectedRoute element={
+              <VolunteerSignup />
+            } />
+          }
+        />
+        <Route
+          path="/volunteer-history"
+          element={
+            <ProtectedRoute element={
+              <VolunteerHistory user={user} />
+            } />
+          }
+        />
+        <Route
+          path="/events/:eventId/manage-volunteers"
+          element={
+            <ProtectedRoute element={
+              <VolunteerManagement user={user} />
+            } />
+          }
+        />
+        <Route
+          path="/events/:eventId/export-volunteers"
+          element={
+            <ProtectedRoute element={
+              <ExportVolunteers user={user} />
+            } />
+          }
+        />
+        {/* Event Edit Route */}
+        <Route
+          path="/events/:eventId/edit"
+          element={
+            <ProtectedRoute element={
+              <EventEdit />
+            } />
+          }
+        />
+        {/* Simple 404 route */}
+        <Route
+          path="*"
+          element={
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              height: '100vh',
+              textAlign: 'center',
+              padding: '20px'
+            }}>
+              <h1 style={{ marginBottom: '1rem' }}>404 - Page Not Found</h1>
+              <p style={{ marginBottom: '2rem' }}>The page you are looking for does not exist.</p>
+              <button 
+                onClick={() => window.location.href = '/'}
+                style={{ 
+                  border: 'none',
+                  backgroundColor: '#007bff',
+                  color: 'white',
+                  padding: '10px 20px',
+                  borderRadius: '5px',
+                  fontSize: '16px',
+                  cursor: 'pointer'
+                }}
+              >
+                Go Back Home
+              </button>
+            </div>
+          }
+        />
+      </Routes>
+    </Router>
+  )
+}
+
+export default App
