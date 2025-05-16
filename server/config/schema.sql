@@ -56,12 +56,14 @@ CREATE TABLE IF NOT EXISTS volunteer_hours (
 CREATE TABLE IF NOT EXISTS queries (
     id INT PRIMARY KEY AUTO_INCREMENT,
     user_id INT NOT NULL,
-    event_id INT NOT NULL,
+    event_id INT,
+    subject VARCHAR(255) NOT NULL,
     message TEXT NOT NULL,
+    status ENUM('open', 'in_progress', 'resolved') DEFAULT 'open',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    response TEXT,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE CASCADE
+    FOREIGN KEY (event_id) REFERENCES events(id) ON DELETE SET NULL
 );
 
 -- Event Approvals table

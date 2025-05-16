@@ -5,8 +5,6 @@ const authRoutes = require('./routes/auth');
 const eventsRoutes = require('./routes/events');
 const volunteerRoutes = require('./routes/volunteers');
 const emailRoutes = require('./routes/email');
-const queriesRoutes = require('./routes/queries');
-
 const cors = require('cors');
 require('dotenv').config();
 
@@ -31,8 +29,6 @@ app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/events', eventsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/email', emailRoutes);
-app.use('/api/queries', queriesRoutes);
-
 
 // Error handling middleware
 app.use((err, req, res, next) => {

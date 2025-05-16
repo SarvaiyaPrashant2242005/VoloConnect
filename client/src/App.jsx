@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import LandingPage from './components/LandingPage'
 import Dashboard from './components/dashboard/dashboard'
 import LoginForm from './components/auth/LoginForm'
@@ -14,7 +14,6 @@ import EventEdit from './components/events/EventEdit'
 import { AuthProvider, AuthContext } from './context/AuthContext.jsx'
 import './App.css'
 import EventDetail from './components/events/EventDetail'
-import styles from './styles/auth/Auth.module.css'
 
 // Protected route wrapper
 const ProtectedRoute = ({ element }) => {
@@ -22,23 +21,9 @@ const ProtectedRoute = ({ element }) => {
   return isAuthenticated ? element : <Navigate to="/login" />
 }
 
-const AuthContainer = ({ children }) => {
-  return (
-    <div className={styles.authContainer}>
-      <Link to="/" className={styles.siteLogo}>
-        <div className={styles.siteName}>
-          <span>Volo</span>
-          <span>Connect</span>
-        </div>
-      </Link>
-      {children}
-    </div>
-  );
-};
-
 const App = () => {
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
       <AuthProvider>
         <AppRoutes />
       </AuthProvider>
@@ -56,9 +41,7 @@ const AppRoutes = () => {
         justifyContent: 'center',
         alignItems: 'center',
         height: '100vh',
-        fontSize: '1.5rem',
-        background: 'linear-gradient(135deg, #2196F3 0%, #4CAF50 100%)',
-        color: 'white'
+        fontSize: '1.5rem'
       }}>
         Loading...
       </div>
@@ -80,9 +63,7 @@ const AppRoutes = () => {
             isAuthenticated ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <AuthContainer>
-                <LoginForm onLogin={login} />
-              </AuthContainer>
+              <LoginForm onLogin={login} />
             )
           }
         />
@@ -92,9 +73,7 @@ const AppRoutes = () => {
             isAuthenticated ? (
               <Navigate to="/dashboard" replace />
             ) : (
-              <AuthContainer>
-                <RegisterForm onLogin={login} />
-              </AuthContainer>
+              <RegisterForm onLogin={login} />
             )
           }
         />
@@ -140,7 +119,7 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/volunteer-management"
+          path="/events/:eventId/manage-volunteers"
           element={
             <ProtectedRoute element={
               <VolunteerManagement user={user} />
@@ -148,18 +127,19 @@ const AppRoutes = () => {
           }
         />
         <Route
-          path="/export-volunteers"
+          path="/events/:eventId/export-volunteers"
           element={
             <ProtectedRoute element={
               <ExportVolunteers user={user} />
             } />
           }
         />
+        {/* Event Edit Route */}
         <Route
           path="/events/:eventId/edit"
           element={
             <ProtectedRoute element={
-              <EventEdit user={user} />
+              <EventEdit />
             } />
           }
         />

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api';
 import styles from './Dashboard.module.css';
@@ -141,7 +141,6 @@ const Dashboard = ({ user, onLogout }) => {
   const navigate = useNavigate();
   const [statsLoading, setStatsLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const revealRefs = useRef([]);
 
   // Parse user skills if they're stored as a JSON string
   const userSkills = useMemo(() => {
@@ -195,28 +194,11 @@ const Dashboard = ({ user, onLogout }) => {
       document.body.style.overflow = '';
     }
 
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add(styles.active);
-        }
-      });
-    }, {
-      threshold: 0.1
-    });
-
-    revealRefs.current.forEach(ref => {
-      if (ref) observer.observe(ref);
-    });
-
     return () => {
       clearInterval(refreshInterval);
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('keydown', handleEscKey);
       document.body.style.overflow = '';
-      revealRefs.current.forEach(ref => {
-        if (ref) observer.unobserve(ref);
-      });
     };
   }, [mobileMenuOpen]);
 
@@ -372,12 +354,6 @@ const Dashboard = ({ user, onLogout }) => {
     navigate('/events/create');
   };
 
-  const addToRefs = (el) => {
-    if (el && !revealRefs.current.includes(el)) {
-      revealRefs.current.push(el);
-    }
-  };
-
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -418,10 +394,7 @@ const Dashboard = ({ user, onLogout }) => {
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
         <div className={styles.sidebarHeader}>
-          <h2 className={styles.logo}>
-            <span>Volo</span>
-            <span>Connect</span>
-          </h2>
+          <h2>VoloConnect</h2>
           {/* Close button visible only on mobile */}
           <button 
             className={styles.mobileCloseButton}
@@ -481,13 +454,11 @@ const Dashboard = ({ user, onLogout }) => {
         {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <h1 ref={addToRefs} className={styles.reveal}>Welcome back, {user?.first_name}!</h1>
-            <p ref={addToRefs} className={`${styles.date} ${styles.reveal}`}>
-              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
-            </p>
+            <h1>Welcome back, {user?.first_name}!</h1>
+            <p className={styles.date}>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
           </div>
           <div className={styles.headerRight}>
-            <div ref={addToRefs} className={`${styles.searchBar} ${styles.reveal}`}>
+            <div className={styles.searchBar}>
               <input
                 type="text"
                 placeholder="Search events..."
@@ -496,7 +467,7 @@ const Dashboard = ({ user, onLogout }) => {
               />
               <span className={styles.searchIcon}>🔍</span>
             </div>
-            <div ref={addToRefs} className={`${styles.userMenu} ${styles.reveal}`}>
+            <div className={styles.userMenu}>
               <img src={`https://ui-avatars.com/api/?name=${user?.first_name}+${user?.last_name}&size=128`} alt="Profile" className={styles.avatar} />
               <span className={styles.userName}>{user?.first_name} {user?.last_name}</span>
             </div>
@@ -509,10 +480,9 @@ const Dashboard = ({ user, onLogout }) => {
             <>
               {/* Stats Section */}
               <div className={styles.statsHeader}>
-                <h2 ref={addToRefs} className={styles.reveal}>Dashboard Statistics</h2>
+                <h2>Dashboard Statistics</h2>
                 <button 
-                  ref={addToRefs}
-                  className={`${styles.refreshButton} ${styles.reveal}`}
+                  className={styles.refreshButton}
                   onClick={fetchDashboardData}
                   disabled={statsLoading}
                 >
@@ -520,29 +490,41 @@ const Dashboard = ({ user, onLogout }) => {
                 </button>
               </div>
               <div className={styles.statsGrid}>
-                {[
-                  { title: "Total Events", value: stats.totalEvents, icon: "📊" },
-                  { title: "Active Events", value: stats.activeEvents, icon: "🎯" },
-                  { title: "Completed Events", value: stats.completedEvents, icon: "✅" },
-                  { title: "Total Volunteers", value: stats.totalVolunteers, icon: "👥" }
-                ].map((stat, index) => (
-                  <div key={index} ref={addToRefs} className={`${styles.statCard} ${styles.reveal}`}>
-                    <StatCard
-                      title={stat.title}
-                      value={stat.value}
-                      icon={stat.icon}
-                      trend={null}
-                      loading={statsLoading}
-                    />
-                  </div>
-                ))}
+                <StatCard
+                  title="Total Events"
+                  value={stats.totalEvents}
+                  icon="📊"
+                  trend={null}
+                  loading={statsLoading}
+                />
+                <StatCard
+                  title="Active Events"
+                  value={stats.activeEvents}
+                  icon="🎯"
+                  trend={null}
+                  loading={statsLoading}
+                />
+                <StatCard
+                  title="Completed Events"
+                  value={stats.completedEvents}
+                  icon="✅"
+                  trend={null}
+                  loading={statsLoading}
+                />
+                <StatCard
+                  title="Total Volunteers"
+                  value={stats.totalVolunteers}
+                  icon="👥"
+                  trend={null}
+                  loading={statsLoading}
+                />
               </div>
 
               {/* Events Section */}
               <section className={styles.eventsSection}>
                 <div className={styles.sectionHeader}>
-                  <h2 ref={addToRefs} className={styles.reveal}>Upcoming Events</h2>
-                  <div ref={addToRefs} className={`${styles.filterButtons} ${styles.reveal}`}>
+                  <h2>Upcoming Events</h2>
+                  <div className={styles.filterButtons}>
                     <button
                       className={`${styles.filterButton} ${filterStatus === 'all' ? styles.active : ''}`}
                       onClick={() => setFilterStatus('all')}
@@ -555,19 +537,19 @@ const Dashboard = ({ user, onLogout }) => {
                     >
                       Active
                     </button>
+                   
                   </div>
                 </div>
                 <div className={styles.eventsGrid}>
-                  {filteredEvents.slice(0, 6).map((event, index) => (
-                    <div key={event.id} ref={addToRefs} className={`${styles.reveal}`}>
-                      <EventCard
-                        event={event}
-                        onJoinEvent={handleJoinEvent}
-                        onViewDetails={handleViewEventDetails}
-                        onEditEvent={handleEditEvent}
-                        currentUser={user}
-                      />
-                    </div>
+                  {filteredEvents.slice(0, 6).map(event => (
+                    <EventCard
+                      key={event.id}
+                      event={event}
+                      onJoinEvent={handleJoinEvent}
+                      onViewDetails={handleViewEventDetails}
+                      onEditEvent={handleEditEvent}
+                      currentUser={user}
+                    />
                   ))}
                 </div>
               </section>
@@ -591,6 +573,7 @@ const Dashboard = ({ user, onLogout }) => {
                   >
                     Active
                   </button>
+                 
                 </div>
               </div>
               <div className={styles.eventsGrid}>
