@@ -1,4 +1,7 @@
+app.js
+
 const express = require('express');
+const cors = require('cors');
 const volunteerRoutes = require('./routes/volunteers');
 const eventRoutes = require('./routes/events');
 const eventManagementRoutes = require('./routes/event_management');
@@ -6,12 +9,25 @@ const volunteerManagementRoutes = require('./routes/volunteer_management');
 const emailRoutes = require('./routes/email');
 const queriesRoutes = require('./routes/queries');
 const authRoutes = require('./routes/auth');
+require('dotenv').config();
 
 const app = express();
 
+// ✅ Move cors here
+const corsOptions = {
+  origin: process.env.NODE_ENV === 'production'
+    ? ['https://voloconnect-client.onrender.com']
+    : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3001'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'user-id'],
+  credentials: true,
+  maxAge: 86400
+};
+
+app.use(cors(corsOptions)); // ✅ MUST be before any routes
 app.use(express.json());
 
-// API routes
+// ✅ API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/events', eventRoutes);
@@ -20,7 +36,7 @@ app.use('/api/volunteer-management', volunteerManagementRoutes);
 app.use('/api/email', emailRoutes);
 app.use('/api/queries', queriesRoutes);
 
-// Test database connection
+// ✅ DB Connection Test
 const pool = require('./config/database');
 const testConnection = async () => {
   try {
@@ -34,7 +50,7 @@ const testConnection = async () => {
 };
 testConnection();
 
-// Error handling middleware
+// ✅ Error handling
 app.use((err, req, res, next) => {
   console.error('Express error handler:', err.stack);
   res.status(500).json({
@@ -44,4 +60,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-module.exports = app;
+module.exports = app;
