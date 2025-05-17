@@ -5,6 +5,8 @@ const eventRoutes = require('./routes/events');
 const eventManagementRoutes = require('./routes/event_management');
 const volunteerManagementRoutes = require('./routes/volunteer_management');
 const emailRoutes = require('./routes/email');
+const queriesRoutes = require('./routes/queries');
+const authRoutes = require('./routes/auth');
 
 const app = express();
 
@@ -12,11 +14,13 @@ app.use(cors());
 app.use(express.json());
 
 // API routes
+app.use('/api/auth', authRoutes);
 app.use('/api/volunteers', volunteerRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/event-management', eventManagementRoutes);
 app.use('/api/volunteer-management', volunteerManagementRoutes);
 app.use('/api/email', emailRoutes);
+app.use('/api/queries', queriesRoutes);
 
 // Test database connection
 const pool = require('./config/database');

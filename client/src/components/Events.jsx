@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, Typography, Grid, Container, Box, Chip, Button, Divider, Paper } from '@mui/material';
 import { format } from 'date-fns';
 import api from '../config/api';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 
 // Event Detail component
 const EventDetail = () => {
@@ -455,17 +456,31 @@ const Events = () => {
                   </Typography>
                 )}
                 <Box sx={{ mt: 2, display: 'flex', justifyContent: 'space-between' }}>
-                  <Button 
-                    size="small" 
-                    variant="contained"
-                    color="primary"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/events/${event.id}/volunteer`);
-                    }}
-                  >
-                    Volunteer
-                  </Button>
+                  <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Button 
+                      size="small" 
+                      variant="contained"
+                      color="primary"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/events/${event.id}/volunteer`);
+                      }}
+                    >
+                      Volunteer
+                    </Button>
+                    <Button 
+                      size="small" 
+                      variant="outlined"
+                      color="secondary"
+                      startIcon={<QuestionAnswerIcon />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/events/${event.id}`);
+                      }}
+                    >
+                      Ask Query
+                    </Button>
+                  </Box>
                   {/* Show management buttons if user is the organizer */}
                   {currentUser && (event.organizer_id === currentUser.id) && (
                     <Box sx={{ display: 'flex', gap: 1 }}>

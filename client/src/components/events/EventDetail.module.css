@@ -1,0 +1,405 @@
+/* EventDetail.module.css - Enhanced styles for event details page */
+
+.eventDetailContainer {
+  min-height: 100vh;
+  background-color: #f8f9fa;
+}
+
+/* Hero Section */
+.heroSection {
+  position: relative;
+  height: 500px;
+  width: 100%;
+  overflow: hidden;
+}
+
+@media (max-width: 768px) {
+  .heroSection {
+    height: 300px;
+  }
+}
+
+.heroBackground {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-size: cover;
+  background-position: center;
+  transition: transform 0.3s ease;
+}
+
+.heroBackground::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.7));
+}
+
+.eventDetailContainer:hover .heroBackground {
+  transform: scale(1.05);
+}
+
+.heroContent {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding-bottom: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.backButton {
+  align-self: flex-start;
+  margin-bottom: 1.5rem;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  color: #333 !important;
+  border-radius: 2rem !important;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.backButton:hover {
+  background-color: rgba(255, 255, 255, 1) !important;
+  box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+.eventTitle {
+  color: white;
+  font-weight: bold !important;
+  margin-bottom: 1rem !important;
+  text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.7) !important;
+  font-size: 2.5rem !important;
+  line-height: 1.2 !important;
+}
+
+@media (max-width: 768px) {
+  .eventTitle {
+    font-size: 1.8rem !important;
+  }
+}
+
+.statusChip {
+  text-transform: capitalize;
+  background-color: rgba(255, 255, 255, 0.9) !important;
+  font-size: 0.9rem !important;
+  height: 32px !important;
+  font-weight: 500 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Main Content */
+.mainContent {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem;
+}
+
+.contentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+}
+
+@media (max-width: 768px) {
+  .mainContent {
+    padding: 2rem 1rem;
+  }
+  
+  .contentGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Section Cards */
+.sectionCard {
+  background-color: white;
+  border-radius: 1rem !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05) !important;
+  padding: 2rem !important;
+  margin-bottom: 2rem !important;
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+.sectionCard:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(-5px);
+}
+
+.sectionTitle {
+  font-size: 1.5rem !important;
+  font-weight: 700 !important;
+  color: #333;
+  margin-bottom: 1.5rem !important;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.sectionIcon {
+  color: #3f51b5 !important;
+  font-size: 1.8rem !important;
+}
+
+.description {
+  color: #666 !important;
+  font-size: 1.1rem !important;
+  line-height: 1.6 !important;
+  margin-bottom: 2rem !important;
+}
+
+/* Event Details List */
+.detailsList {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detailItem {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.detailIcon {
+  color: #3f51b5 !important;
+  background-color: #eef0ff;
+  border-radius: 50%;
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem !important;
+}
+
+.detailContent {
+  flex: 1;
+}
+
+.detailLabel {
+  color: #888 !important;
+  font-size: 0.9rem !important;
+  margin-bottom: 4px !important;
+}
+
+.detailValue {
+  font-size: 1.1rem !important;
+  color: #333 !important;
+  font-weight: 500 !important;
+}
+
+/* Volunteer Stats */
+.statsCard {
+  background-color: white;
+  border-radius: 1rem !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05) !important;
+  padding: 2rem !important;
+  margin-bottom: 2rem !important;
+  border: none !important;
+  transition: all 0.3s ease;
+}
+
+.statsCard:hover {
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08) !important;
+}
+
+.volunteerCount {
+  font-size: 3rem !important;
+  font-weight: 700 !important;
+  color: #3f51b5 !important;
+  margin-bottom: 0.5rem !important;
+  line-height: 1 !important;
+}
+
+.volunteerLabel {
+  color: #666 !important;
+  font-size: 1rem !important;
+}
+
+.progressContainer {
+  margin-top: 1rem;
+  background-color: #eef0ff;
+  border-radius: 1rem;
+  height: 10px;
+  overflow: hidden;
+}
+
+.progressBar {
+  height: 100%;
+  background: linear-gradient(to right, #3f51b5, #7986cb);
+  border-radius: 1rem;
+  transition: width 0.5s ease;
+}
+
+/* Organizer Section */
+.organizerHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.organizerAvatar {
+  background-color: #3f51b5 !important;
+  width: 64px !important;
+  height: 64px !important;
+  font-size: 1.8rem !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.organizerName {
+  font-weight: 600 !important;
+  font-size: 1.2rem !important;
+  color: #333 !important;
+  margin-bottom: 4px !important;
+}
+
+.organizerEmail {
+  color: #888 !important;
+  font-size: 0.9rem !important;
+}
+
+/* Action Buttons */
+.actionButton {
+  padding: 1rem 0 !important;
+  border-radius: 2rem !important;
+  text-transform: none !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  width: 100%;
+  margin-bottom: 1rem !important;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1) !important;
+  transition: all 0.3s ease !important;
+}
+
+.primaryButton {
+  background: linear-gradient(45deg, #3f51b5, #7986cb) !important;
+  color: white !important;
+}
+
+.primaryButton:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15) !important;
+  transform: translateY(-2px);
+}
+
+.secondaryButton {
+  background-color: transparent !important;
+  border: 2px solid #3f51b5 !important;
+  color: #3f51b5 !important;
+}
+
+.secondaryButton:hover {
+  background-color: rgba(63, 81, 181, 0.05) !important;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1) !important;
+  transform: translateY(-2px);
+}
+
+/* Queries Section */
+.queryForm {
+  margin-bottom: 2rem;
+}
+
+.queryField {
+  margin-bottom: 1rem !important;
+}
+
+.queryFieldInput {
+  padding: 1rem !important;
+  border-radius: 1rem !important;
+  background-color: #f8f9fa !important;
+}
+
+.queryFieldInput:focus {
+  background-color: #fff !important;
+  box-shadow: 0 0 0 2px rgba(63, 81, 181, 0.2);
+}
+
+.sendButton {
+  color: #3f51b5 !important;
+  transition: all 0.3s ease !important;
+}
+
+.sendButton:hover {
+  transform: scale(1.1);
+}
+
+.queryList {
+  padding: 0 !important;
+}
+
+.queryItem {
+  background-color: #f8f9fa !important;
+  border-radius: 1rem !important;
+  margin-bottom: 1.5rem !important;
+  padding: 1.5rem !important;
+  transition: all 0.2s ease;
+}
+
+.queryItem:hover {
+  background-color: #f0f0f0 !important;
+}
+
+.queryAvatar {
+  background-color: #3f51b5 !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.queryMessage {
+  font-weight: 500 !important;
+  color: #333 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.queryTime {
+  color: #999 !important;
+  font-size: 0.8rem !important;
+}
+
+.responseContainer {
+  padding-left: 3.5rem;
+  margin-top: 1rem;
+}
+
+.responseBox {
+  background: linear-gradient(45deg, #eef0ff, #e3f2fd) !important;
+  color: #333 !important;
+  border-radius: 1rem !important;
+  padding: 1.5rem !important;
+  position: relative;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.responseBox::before {
+  content: "";
+  position: absolute;
+  top: -8px;
+  left: 24px;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(135deg, #eef0ff, #e3f2fd);
+  transform: rotate(45deg);
+}
+
+.responseText {
+  font-size: 1rem !important;
+  line-height: 1.5 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.responseAuthor {
+  font-style: italic !important;
+  color: #666 !important;
+  font-size: 0.9rem !important;
+  text-align: right !important;
+} 

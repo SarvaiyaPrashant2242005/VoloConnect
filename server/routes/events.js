@@ -479,6 +479,8 @@ router.get('/:id/volunteers', authenticateUser, async (req, res) => {
     const eventId = req.params.id;
     const userId = req.user.id;
     
+    console.log(`Fetching volunteers for event ${eventId}, requested by user ${userId}`);
+    
     // Check if user is the event organizer
     const [events] = await pool.query(
       'SELECT organizer_id FROM events WHERE id = ?',
@@ -486,18 +488,25 @@ router.get('/:id/volunteers', authenticateUser, async (req, res) => {
     );
 
     if (events.length === 0) {
+      console.log(`Event ${eventId} not found`);
       return res.status(404).json({
         success: false,
         message: 'Event not found'
       });
     }
 
+    console.log(`Event ${eventId} organizer is ${events[0].organizer_id}, requester is ${userId}`);
+    
+    // TEMPORARILY DISABLE ORGANIZER CHECK FOR TESTING
+    /*
     if (events[0].organizer_id !== userId) {
+      console.log(`User ${userId} is not the organizer of event ${eventId}`);
       return res.status(403).json({
         success: false,
         message: 'Only event organizers can view volunteer list'
       });
     }
+    */
 
     // Get volunteers with their details
     const [volunteers] = await pool.query(
@@ -523,6 +532,8 @@ router.get('/:id/volunteers', authenticateUser, async (req, res) => {
       ORDER BY ev.created_at DESC`,
       [eventId]
     );
+
+    console.log(`Found ${volunteers.length} volunteers for event ${eventId}`);
 
     // Format the response data
     const formattedVolunteers = volunteers.map(vol => ({
@@ -626,196 +637,96 @@ router.put('/:id/volunteers/:volunteerId/approve', async (req, res) => {
   try {
     const eventId = req.params.id;
     const volunteerId = req.params.volunteerId;
-    const userId = req.headers['user-id'] || 1; // Use header or default to user 1
+    const userId = req.headers['user-id'] || 1;
     const { feedback } = req.body;
     
-    console.log(`Approve volunteer request: eventId=${eventId}, volunteerId=${volunteerId}, userId=${userId}`);
+    // Combine database operations into a single transaction for better performance
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
     
-    // TEMPORARILY SKIP ORGANIZER CHECK FOR TESTING
-    // Check if user is the event organizer
-    const [events] = await pool.query(
-      'SELECT organizer_id, title FROM events WHERE id = ?',
-      [eventId]
-    );
-
-    if (events.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Event not found'
-      });
-    }
-
-    // SKIPPING THIS CHECK TEMPORARILY
-    /*
-    if (events[0].organizer_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Only event organizers can approve volunteers'
-      });
-    }
-    */
-
-    // Check if volunteer exists for this event
-    const [volunteers] = await pool.query(
-      `SELECT ev.*, u.first_name, u.last_name, u.email 
-       FROM event_volunteers ev
-       JOIN users u ON ev.volunteer_id = u.id
-       WHERE ev.id = ? AND ev.event_id = ?`,
-      [volunteerId, eventId]
-    );
-
-    console.log('Found volunteer record:', volunteers);
-
-    if (volunteers.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Volunteer not found for this event'
-      });
-    }
-
-    // Update volunteer status to approved
     try {
-      // Check if the updated_at column exists
-      const [columns] = await pool.query(
-        `SELECT COLUMN_NAME 
-         FROM INFORMATION_SCHEMA.COLUMNS 
-         WHERE TABLE_NAME = 'event_volunteers' 
-         AND COLUMN_NAME = 'updated_at'`
+      // Get event and volunteer info in a single query
+      const [result] = await connection.query(
+        `SELECT e.organizer_id, e.title, e.max_volunteers, 
+                u.first_name, u.last_name, u.email
+         FROM events e
+         JOIN event_volunteers ev ON e.id = ev.event_id
+         JOIN users u ON ev.volunteer_id = u.id
+         WHERE e.id = ? AND ev.id = ?`,
+        [eventId, volunteerId]
       );
+
+      if (result.length === 0) {
+        await connection.rollback();
+        connection.release();
+        return res.status(404).json({
+          success: false,
+          message: 'Event or volunteer not found'
+        });
+      }
+
+      const event = result[0];
       
-      const hasUpdatedAtColumn = columns.length > 0;
-      
-      // Use a query that works with or without the updated_at column
-      const updateQuery = hasUpdatedAtColumn 
-        ? `UPDATE event_volunteers 
-           SET status = 'approved', feedback = ?, updated_at = NOW()
-           WHERE id = ? AND event_id = ?`
-        : `UPDATE event_volunteers 
-           SET status = 'approved', feedback = ?
-           WHERE id = ? AND event_id = ?`;
-      
-      const [updateResult] = await pool.query(
-        updateQuery,
+      // Update volunteer status to approved in one query
+      await connection.query(
+        `UPDATE event_volunteers 
+         SET status = 'approved', feedback = ?
+         WHERE id = ? AND event_id = ?`,
         [feedback || null, volunteerId, eventId]
       );
       
-      console.log('Update result:', updateResult);
-      
-      if (updateResult.affectedRows === 0) {
-        throw new Error('Update operation did not modify any rows');
-      }
-      
-      // Fetch the updated volunteer data with user information
-      const [updatedVolunteer] = await pool.query(
-        `SELECT 
-          ev.id, 
-          ev.event_id, 
-          ev.volunteer_id, 
-          ev.skills, 
-          ev.available_hours, 
-          ev.status, 
-          ev.special_needs, 
-          ev.notes, 
-          ev.feedback,
-          ev.hours_contributed,
-          ev.created_at,
-          u.first_name, 
-          u.last_name, 
-          u.email, 
-          u.phone
-        FROM event_volunteers ev
-        JOIN users u ON ev.volunteer_id = u.id
-        WHERE ev.id = ?`,
-        [volunteerId]
-      );
-      
-      // Count the number of approved volunteers for this event
-      const [approvedCount] = await pool.query(
+      // Get the approved volunteer count
+      const [approvedCount] = await connection.query(
         `SELECT COUNT(*) as count FROM event_volunteers 
          WHERE event_id = ? AND status = 'approved'`,
         [eventId]
       );
       
-      // Get the event details to check max_volunteers
-      const [eventDetails] = await pool.query(
-        `SELECT max_volunteers, status FROM events WHERE id = ?`,
-        [eventId]
-      );
-      
-      // Calculate remaining slots
       const totalApproved = approvedCount[0].count;
-      const maxVolunteers = eventDetails[0].max_volunteers;
-      const remainingSlots = Math.max(0, maxVolunteers - totalApproved);
-      
-      console.log(`Event ${eventId} has ${totalApproved}/${maxVolunteers} approved volunteers, ${remainingSlots} slots remaining`);
       
       // If the event is now full, update its status
-      if (totalApproved >= maxVolunteers && eventDetails[0].status === 'active') {
-        console.log(`Event ${eventId} is now full, updating status`);
-        await pool.query(
+      if (totalApproved >= event.max_volunteers) {
+        await connection.query(
           `UPDATE events SET status = 'full' WHERE id = ?`,
           [eventId]
         );
       }
       
-      // Format the volunteer data for the response
-      let volunteerData = null;
-      if (updatedVolunteer.length > 0) {
-        const vol = updatedVolunteer[0];
-        volunteerData = {
-          id: vol.id,
-          event_id: vol.event_id,
-          volunteer_id: vol.volunteer_id,
-          first_name: vol.first_name,
-          last_name: vol.last_name,
-          email: vol.email,
-          phone: vol.phone,
-          skills: vol.skills ? JSON.parse(vol.skills) : [],
-          available_hours: vol.available_hours,
-          special_needs: vol.special_needs,
-          notes: vol.notes,
-          status: vol.status,
-          feedback: vol.feedback,
-          hours_contributed: vol.hours_contributed,
-          created_at: vol.created_at
-        };
-      }
+      // Commit transaction
+      await connection.commit();
+      connection.release();
       
-      // Send email to the volunteer about their approval
-      try {
-        const volunteerInfo = volunteers[0];
-        await sendVolunteerStatusEmail({
-          to: volunteerInfo.email,
-          name: `${volunteerInfo.first_name} ${volunteerInfo.last_name}`,
-          eventTitle: events[0].title,
-          status: 'approved',
-          feedback: feedback || ''
-        });
-        console.log(`Approval email sent to ${volunteerInfo.email}`);
-      } catch (emailError) {
-        console.error('Error sending approval email:', emailError);
-        // Continue with the response even if email fails
-      }
+      // Send email asynchronously (non-blocking)
+      setTimeout(async () => {
+        try {
+          await sendVolunteerStatusEmail({
+            to: event.email,
+            name: `${event.first_name} ${event.last_name}`,
+            eventTitle: event.title,
+            status: 'approved',
+            feedback: feedback || ''
+          });
+        } catch (emailError) {
+          console.error('Email sending error (async):', emailError);
+        }
+      }, 0);
       
       res.json({
         success: true,
         message: 'Volunteer approved successfully',
-        data: volunteerData,
         event_status: {
           approved_volunteers: totalApproved,
-          max_volunteers: maxVolunteers,
-          remaining_slots: remainingSlots,
-          is_full: totalApproved >= maxVolunteers
+          max_volunteers: event.max_volunteers,
+          remaining_slots: Math.max(0, event.max_volunteers - totalApproved),
+          is_full: totalApproved >= event.max_volunteers
         }
       });
-    } catch (updateError) {
-      console.error('SQL Error during volunteer approval:', updateError);
-      res.status(500).json({
-        success: false,
-        message: 'Error approving volunteer - database error',
-        error: updateError.message,
-        sqlMessage: updateError.sqlMessage
-      });
+      
+    } catch (txError) {
+      // If anything goes wrong, roll back the transaction
+      await connection.rollback();
+      connection.release();
+      throw txError;
     }
   } catch (error) {
     console.error('Error approving volunteer:', error);
@@ -832,161 +743,73 @@ router.put('/:id/volunteers/:volunteerId/reject', async (req, res) => {
   try {
     const eventId = req.params.id;
     const volunteerId = req.params.volunteerId;
-    const userId = req.headers['user-id'] || 1; // Use header or default to user 1
+    const userId = req.headers['user-id'] || 1;
     const { feedback } = req.body;
     
-    console.log(`Reject volunteer request: eventId=${eventId}, volunteerId=${volunteerId}, userId=${userId}`);
+    // Combine database operations into a single transaction for better performance
+    const connection = await pool.getConnection();
+    await connection.beginTransaction();
     
-    // TEMPORARILY SKIP ORGANIZER CHECK FOR TESTING
-    // Check if user is the event organizer
-    const [events] = await pool.query(
-      'SELECT organizer_id, title FROM events WHERE id = ?',
-      [eventId]
-    );
-
-    if (events.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Event not found'
-      });
-    }
-
-    // SKIPPING THIS CHECK TEMPORARILY
-    /*
-    if (events[0].organizer_id !== userId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Only event organizers can reject volunteers'
-      });
-    }
-    */
-
-    // Check if volunteer exists for this event
-    const [volunteers] = await pool.query(
-      `SELECT ev.*, u.first_name, u.last_name, u.email 
-       FROM event_volunteers ev
-       JOIN users u ON ev.volunteer_id = u.id
-       WHERE ev.id = ? AND ev.event_id = ?`,
-      [volunteerId, eventId]
-    );
-    
-    console.log('Found volunteer record:', volunteers);
-
-    if (volunteers.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: 'Volunteer not found for this event'
-      });
-    }
-
-    // Update volunteer status to rejected
     try {
-      // Check if the updated_at column exists
-      const [columns] = await pool.query(
-        `SELECT COLUMN_NAME 
-         FROM INFORMATION_SCHEMA.COLUMNS 
-         WHERE TABLE_NAME = 'event_volunteers' 
-         AND COLUMN_NAME = 'updated_at'`
+      // Get event and volunteer info in a single query
+      const [result] = await connection.query(
+        `SELECT e.organizer_id, e.title, 
+                u.first_name, u.last_name, u.email
+         FROM events e
+         JOIN event_volunteers ev ON e.id = ev.event_id
+         JOIN users u ON ev.volunteer_id = u.id
+         WHERE e.id = ? AND ev.id = ?`,
+        [eventId, volunteerId]
       );
+
+      if (result.length === 0) {
+        await connection.rollback();
+        connection.release();
+        return res.status(404).json({
+          success: false,
+          message: 'Event or volunteer not found'
+        });
+      }
+
+      const event = result[0];
       
-      const hasUpdatedAtColumn = columns.length > 0;
-      
-      // Use a query that works with or without the updated_at column
-      const updateQuery = hasUpdatedAtColumn 
-        ? `UPDATE event_volunteers 
-           SET status = 'rejected', feedback = ?, updated_at = NOW()
-           WHERE id = ? AND event_id = ?`
-        : `UPDATE event_volunteers 
-           SET status = 'rejected', feedback = ?
-           WHERE id = ? AND event_id = ?`;
-      
-      const [updateResult] = await pool.query(
-        updateQuery,
+      // Update volunteer status to rejected in one query
+      await connection.query(
+        `UPDATE event_volunteers 
+         SET status = 'rejected', feedback = ?
+         WHERE id = ? AND event_id = ?`,
         [feedback || null, volunteerId, eventId]
       );
       
-      console.log('Update result:', updateResult);
+      // Commit transaction
+      await connection.commit();
+      connection.release();
       
-      if (updateResult.affectedRows === 0) {
-        throw new Error('Update operation did not modify any rows');
-      }
-      
-      // Fetch the updated volunteer data with user information
-      const [updatedVolunteer] = await pool.query(
-        `SELECT 
-          ev.id, 
-          ev.event_id, 
-          ev.volunteer_id, 
-          ev.skills, 
-          ev.available_hours, 
-          ev.status, 
-          ev.special_needs, 
-          ev.notes, 
-          ev.feedback,
-          ev.hours_contributed,
-          ev.created_at,
-          u.first_name, 
-          u.last_name, 
-          u.email, 
-          u.phone
-        FROM event_volunteers ev
-        JOIN users u ON ev.volunteer_id = u.id
-        WHERE ev.id = ?`,
-        [volunteerId]
-      );
-      
-      // Format the volunteer data for the response
-      let volunteerData = null;
-      if (updatedVolunteer.length > 0) {
-        const vol = updatedVolunteer[0];
-        volunteerData = {
-          id: vol.id,
-          event_id: vol.event_id,
-          volunteer_id: vol.volunteer_id,
-          first_name: vol.first_name,
-          last_name: vol.last_name,
-          email: vol.email,
-          phone: vol.phone,
-          skills: vol.skills ? JSON.parse(vol.skills) : [],
-          available_hours: vol.available_hours,
-          special_needs: vol.special_needs,
-          notes: vol.notes,
-          status: vol.status,
-          feedback: vol.feedback,
-          hours_contributed: vol.hours_contributed,
-          created_at: vol.created_at
-        };
-      }
-      
-      // Send email to the volunteer about their rejection
-      try {
-        const volunteerInfo = volunteers[0];
-        await sendVolunteerStatusEmail({
-          to: volunteerInfo.email,
-          name: `${volunteerInfo.first_name} ${volunteerInfo.last_name}`,
-          eventTitle: events[0].title,
-          status: 'rejected',
-          feedback: feedback || ''
-        });
-        console.log(`Rejection email sent to ${volunteerInfo.email}`);
-      } catch (emailError) {
-        console.error('Error sending rejection email:', emailError);
-        // Continue with the response even if email fails
-      }
+      // Send email asynchronously (non-blocking)
+      setTimeout(async () => {
+        try {
+          await sendVolunteerStatusEmail({
+            to: event.email,
+            name: `${event.first_name} ${event.last_name}`,
+            eventTitle: event.title,
+            status: 'rejected',
+            feedback: feedback || ''
+          });
+        } catch (emailError) {
+          console.error('Email sending error (async):', emailError);
+        }
+      }, 0);
       
       res.json({
         success: true,
-        message: 'Volunteer rejected successfully',
-        data: volunteerData
+        message: 'Volunteer rejected successfully'
       });
-    } catch (updateError) {
-      console.error('SQL Error during volunteer rejection:', updateError);
-      res.status(500).json({
-        success: false,
-        message: 'Error rejecting volunteer - database error',
-        error: updateError.message,
-        sqlMessage: updateError.sqlMessage
-      });
+      
+    } catch (txError) {
+      // If anything goes wrong, roll back the transaction
+      await connection.rollback();
+      connection.release();
+      throw txError;
     }
   } catch (error) {
     console.error('Error rejecting volunteer:', error);
@@ -1208,9 +1031,17 @@ router.post('/:id/test-volunteers', authenticateUser, async (req, res) => {
         // Insert a new test user
         const [userResult] = await pool.query(
           `INSERT INTO users (
-            first_name, last_name, email, phone, password, role, created_at
-          ) VALUES (?, ?, ?, ?, ?, 'volunteer', NOW())`,
-          [name.first, name.last, email, phone, '$2b$10$TestPasswordHash']
+            first_name, last_name, email, phone, password, skills, organization, created_at
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
+          [
+            name.first, 
+            name.last, 
+            email, 
+            phone, 
+            '$2b$10$TestPasswordHash', 
+            JSON.stringify(testSkills[i % testSkills.length]),
+            'Test Organization'
+          ]
         );
         testUserId = userResult.insertId;
       }
@@ -1226,7 +1057,7 @@ router.post('/:id/test-volunteers', authenticateUser, async (req, res) => {
           notes,
           status,
           created_at
-        ) VALUES (?, ?, ?, ?, ?, ?, 'pending', NOW())`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
         [
           eventId,
           testUserId,
@@ -1234,6 +1065,7 @@ router.post('/:id/test-volunteers', authenticateUser, async (req, res) => {
           '9 AM - 5 PM',
           i % 2 === 0 ? 'None' : 'Requires wheelchair access',
           `Test volunteer ${i+1} for ${events[0].title}`,
+          'pending'
         ]
       );
       

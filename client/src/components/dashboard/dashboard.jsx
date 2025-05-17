@@ -1,10 +1,11 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../config/api';
 import styles from './Dashboard.module.css';
 import { eventService } from '../../services/eventService';
 import CreateEvent from './CreateEvent';
 import { Button, IconButton, Menu } from '@mui/material';
+import QuestionAnswerIcon from '@mui/icons-material/QuestionAnswer';
 
 // Event card component with improved visual design for laptop screens
 const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser }) => {
@@ -31,6 +32,7 @@ const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser
 
   return (
     <div className={styles.eventCard}>
+      {/* Card Header with Title and Status */}
       <div className={styles.eventHeader}>
         <h3 className={styles.eventTitle}>{event.title}</h3>
         <span className={`${styles.eventStatus} ${getStatusClass(event.status)}`}>
@@ -38,8 +40,10 @@ const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser
         </span>
       </div>
       
+      {/* Event Description */}
       <p className={styles.eventDescription}>{event.description}</p>
       
+      {/* Event Details (Location, Date, Volunteers) */}
       <div className={styles.eventDetails}>
         <div className={styles.eventDetail}>
           <span className={styles.detailIcon}>📍</span>
@@ -60,6 +64,7 @@ const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser
         </div>
       </div>
       
+      {/* Volunteer Progress Bar */}
       <div className={styles.eventProgress}>
         <div 
           className={styles.progressBar} 
@@ -72,31 +77,48 @@ const EventCard = ({ event, onJoinEvent, onViewDetails, onEditEvent, currentUser
         </div>
       </div>
       
+      {/* Card Actions */}
       <div className={styles.eventActions}>
-        <button 
-          className={`${styles.actionButton} ${styles.viewButton}`}
-          onClick={() => onViewDetails(event.id)}
-        >
-          View Details
-        </button>
+        {/* First row of buttons */}
+        <div className={styles.actionRow}>
+          <button 
+            className={`${styles.actionButton} ${styles.viewButton}`}
+            onClick={() => onViewDetails(event.id)}
+          >
+            View Details
+          </button>
+          
+          <button 
+            className={`${styles.actionButton} ${styles.secondaryButton}`}
+            onClick={() => onViewDetails(event.id)}
+          >
+            <span className={styles.buttonIcon}>
+              <QuestionAnswerIcon fontSize="small" />
+            </span>
+            Ask Query
+          </button>
+        </div>
         
-        {isOrganizer ? (
-          <button 
-            className={`${styles.actionButton} ${styles.editButton}`}
-            onClick={() => onEditEvent(event.id)}
-          >
-            Edit Event
-          </button>
-        ) : (
-          <button 
-            className={`${styles.actionButton} ${styles.primaryButton}`}
-            onClick={() => onJoinEvent(event.id)}
-            disabled={event.status === 'full' || event.status === 'completed'}
-          >
-            {event.status === 'full' ? 'Event Full' : 
-             event.status === 'completed' ? 'Completed' : 'Join Event'}
-          </button>
-        )}
+        {/* Second row with conditional button (Edit or Join) */}
+        <div className={styles.actionRow}>
+          {isOrganizer ? (
+            <button 
+              className={`${styles.actionButton} ${styles.editButton} ${styles.fullWidth}`}
+              onClick={() => onEditEvent(event.id)}
+            >
+              Edit Event
+            </button>
+          ) : (
+            <button 
+              className={`${styles.actionButton} ${styles.primaryButton} ${styles.fullWidth}`}
+              onClick={() => onJoinEvent(event.id)}
+              disabled={event.status === 'full' || event.status === 'completed'}
+            >
+              {event.status === 'full' ? 'Event Full' : 
+               event.status === 'completed' ? 'Completed' : 'Join Event'}
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -135,12 +157,16 @@ const Dashboard = ({ user, onLogout }) => {
   const [error, setError] = useState(null);
   const [events, setEvents] = useState([]);
   const [myEvents, setMyEvents] = useState([]);
+  const [userQueries, setUserQueries] = useState([]);
+  const [queriesLoading, setQueriesLoading] = useState(false);
+  const [queriesError, setQueriesError] = useState(null);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const navigate = useNavigate();
   const [statsLoading, setStatsLoading] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const revealRefs = useRef([]);
 
   // Parse user skills if they're stored as a JSON string
   const userSkills = useMemo(() => {
@@ -164,6 +190,7 @@ const Dashboard = ({ user, onLogout }) => {
   useEffect(() => {
     fetchDashboardData();
     fetchEvents();
+    fetchUserQueries();
 
     // Set up auto-refresh for stats every 5 minutes
     const refreshInterval = setInterval(() => {
@@ -194,11 +221,28 @@ const Dashboard = ({ user, onLogout }) => {
       document.body.style.overflow = '';
     }
 
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add(styles.active);
+        }
+      });
+    }, {
+      threshold: 0.1
+    });
+
+    revealRefs.current.forEach(ref => {
+      if (ref) observer.observe(ref);
+    });
+
     return () => {
       clearInterval(refreshInterval);
       window.removeEventListener('resize', handleResize);
       document.removeEventListener('keydown', handleEscKey);
       document.body.style.overflow = '';
+      revealRefs.current.forEach(ref => {
+        if (ref) observer.unobserve(ref);
+      });
     };
   }, [mobileMenuOpen]);
 
@@ -290,6 +334,28 @@ const Dashboard = ({ user, onLogout }) => {
     }
   };
 
+  const fetchUserQueries = async () => {
+    try {
+      setQueriesLoading(true);
+      setQueriesError(null);
+      
+      const response = await api.get('/api/queries/my-queries');
+      
+      if (response.data) {
+        setUserQueries(response.data);
+        console.log('User queries loaded:', response.data);
+      } else {
+        setUserQueries([]);
+      }
+    } catch (error) {
+      console.error('Error fetching user queries:', error);
+      setQueriesError('Failed to load your queries. Please try again.');
+      setUserQueries([]);
+    } finally {
+      setQueriesLoading(false);
+    }
+  };
+
   const handleLogout = () => {
     onLogout();
     navigate('/login');
@@ -354,6 +420,12 @@ const Dashboard = ({ user, onLogout }) => {
     navigate('/events/create');
   };
 
+  const addToRefs = (el) => {
+    if (el && !revealRefs.current.includes(el)) {
+      revealRefs.current.push(el);
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -394,7 +466,10 @@ const Dashboard = ({ user, onLogout }) => {
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${mobileMenuOpen ? styles.open : ''}`}>
         <div className={styles.sidebarHeader}>
-          <h2>VoloConnect</h2>
+          <h2 className={styles.logo}>
+            <span>Volo</span>
+            <span>Connect</span>
+          </h2>
           {/* Close button visible only on mobile */}
           <button 
             className={styles.mobileCloseButton}
@@ -454,11 +529,13 @@ const Dashboard = ({ user, onLogout }) => {
         {/* Header */}
         <header className={styles.header}>
           <div className={styles.headerLeft}>
-            <h1>Welcome back, {user?.first_name}!</h1>
-            <p className={styles.date}>{new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+            <h1 ref={addToRefs} className={styles.reveal}>Welcome back, {user?.first_name}!</h1>
+            <p ref={addToRefs} className={`${styles.date} ${styles.reveal}`}>
+              {new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
           </div>
           <div className={styles.headerRight}>
-            <div className={styles.searchBar}>
+            <div ref={addToRefs} className={`${styles.searchBar} ${styles.reveal}`}>
               <input
                 type="text"
                 placeholder="Search events..."
@@ -467,7 +544,7 @@ const Dashboard = ({ user, onLogout }) => {
               />
               <span className={styles.searchIcon}>🔍</span>
             </div>
-            <div className={styles.userMenu}>
+            <div ref={addToRefs} className={`${styles.userMenu} ${styles.reveal}`}>
               <img src={`https://ui-avatars.com/api/?name=${user?.first_name}+${user?.last_name}&size=128`} alt="Profile" className={styles.avatar} />
               <span className={styles.userName}>{user?.first_name} {user?.last_name}</span>
             </div>
@@ -480,9 +557,10 @@ const Dashboard = ({ user, onLogout }) => {
             <>
               {/* Stats Section */}
               <div className={styles.statsHeader}>
-                <h2>Dashboard Statistics</h2>
+                <h2 ref={addToRefs} className={styles.reveal}>Dashboard Statistics</h2>
                 <button 
-                  className={styles.refreshButton}
+                  ref={addToRefs}
+                  className={`${styles.refreshButton} ${styles.reveal}`}
                   onClick={fetchDashboardData}
                   disabled={statsLoading}
                 >
@@ -490,41 +568,29 @@ const Dashboard = ({ user, onLogout }) => {
                 </button>
               </div>
               <div className={styles.statsGrid}>
-                <StatCard
-                  title="Total Events"
-                  value={stats.totalEvents}
-                  icon="📊"
-                  trend={null}
-                  loading={statsLoading}
-                />
-                <StatCard
-                  title="Active Events"
-                  value={stats.activeEvents}
-                  icon="🎯"
-                  trend={null}
-                  loading={statsLoading}
-                />
-                <StatCard
-                  title="Completed Events"
-                  value={stats.completedEvents}
-                  icon="✅"
-                  trend={null}
-                  loading={statsLoading}
-                />
-                <StatCard
-                  title="Total Volunteers"
-                  value={stats.totalVolunteers}
-                  icon="👥"
-                  trend={null}
-                  loading={statsLoading}
-                />
+                {[
+                  { title: "Total Events", value: stats.totalEvents, icon: "📊" },
+                  { title: "Active Events", value: stats.activeEvents, icon: "🎯" },
+                  { title: "Completed Events", value: stats.completedEvents, icon: "✅" },
+                  { title: "Total Volunteers", value: stats.totalVolunteers, icon: "👥" }
+                ].map((stat, index) => (
+                  <div key={index} ref={addToRefs} className={`${styles.statCard} ${styles.reveal}`}>
+                    <StatCard
+                      title={stat.title}
+                      value={stat.value}
+                      icon={stat.icon}
+                      trend={null}
+                      loading={statsLoading}
+                    />
+                  </div>
+                ))}
               </div>
 
               {/* Events Section */}
               <section className={styles.eventsSection}>
                 <div className={styles.sectionHeader}>
-                  <h2>Upcoming Events</h2>
-                  <div className={styles.filterButtons}>
+                  <h2 ref={addToRefs} className={styles.reveal}>Upcoming Events</h2>
+                  <div ref={addToRefs} className={`${styles.filterButtons} ${styles.reveal}`}>
                     <button
                       className={`${styles.filterButton} ${filterStatus === 'all' ? styles.active : ''}`}
                       onClick={() => setFilterStatus('all')}
@@ -537,19 +603,19 @@ const Dashboard = ({ user, onLogout }) => {
                     >
                       Active
                     </button>
-                   
                   </div>
                 </div>
                 <div className={styles.eventsGrid}>
-                  {filteredEvents.slice(0, 6).map(event => (
-                    <EventCard
-                      key={event.id}
-                      event={event}
-                      onJoinEvent={handleJoinEvent}
-                      onViewDetails={handleViewEventDetails}
-                      onEditEvent={handleEditEvent}
-                      currentUser={user}
-                    />
+                  {filteredEvents.slice(0, 6).map((event, index) => (
+                    <div key={event.id} ref={addToRefs} className={`${styles.reveal}`}>
+                      <EventCard
+                        event={event}
+                        onJoinEvent={handleJoinEvent}
+                        onViewDetails={handleViewEventDetails}
+                        onEditEvent={handleEditEvent}
+                        currentUser={user}
+                      />
+                    </div>
                   ))}
                 </div>
               </section>
@@ -573,7 +639,6 @@ const Dashboard = ({ user, onLogout }) => {
                   >
                     Active
                   </button>
-                 
                 </div>
               </div>
               <div className={styles.eventsGrid}>
@@ -698,6 +763,77 @@ const Dashboard = ({ user, onLogout }) => {
                     </div>
                   </div>
                 </div>
+              </div>
+              
+              {/* My Queries Section */}
+              <div className={styles.queriesSection}>
+                <h2 className={styles.sectionTitle}>My Queries</h2>
+                
+                {queriesLoading ? (
+                  <div className={styles.loadingContainer}>
+                    <div className={styles.loader}></div>
+                    <p>Loading your queries...</p>
+                  </div>
+                ) : queriesError ? (
+                  <div className={styles.errorContainer}>
+                    <p className={styles.errorMessage}>{queriesError}</p>
+                    <button 
+                      onClick={fetchUserQueries}
+                      className={styles.retryButton}
+                    >
+                      Retry
+                    </button>
+                  </div>
+                ) : userQueries.length === 0 ? (
+                  <div className={styles.noQueries}>
+                    <p>You haven't asked any questions yet</p>
+                    <p className={styles.noQueriesSubtext}>
+                      Visit an event page and click "Ask Query" to start a conversation
+                    </p>
+                  </div>
+                ) : (
+                  <div className={styles.queriesList}>
+                    {userQueries.map(query => (
+                      <div key={query.id} className={styles.queryCard}>
+                        <div className={styles.queryHeader}>
+                          <h3 className={styles.queryEventTitle}>
+                            {query.event_title}
+                          </h3>
+                          <span className={`${styles.queryStatus} ${query.status === 'answered' ? styles.statusAnswered : styles.statusPending}`}>
+                            {query.status === 'answered' ? 'Answered' : 'Awaiting Response'}
+                          </span>
+                        </div>
+                        <div className={styles.queryContent}>
+                          <p className={styles.queryMessage}>
+                            <span className={styles.queryLabel}>Your Query:</span>
+                            {query.message}
+                          </p>
+                          {query.response ? (
+                            <p className={styles.queryResponse}>
+                              <span className={styles.responseLabel}>Response:</span>
+                              {query.response}
+                            </p>
+                          ) : (
+                            <p className={styles.pendingResponse}>
+                              No response yet from event organizer
+                            </p>
+                          )}
+                        </div>
+                        <div className={styles.queryFooter}>
+                          <span className={styles.queryDate}>
+                            Posted on {new Date(query.created_at).toLocaleDateString()}
+                          </span>
+                          <button 
+                            className={styles.viewEventButton}
+                            onClick={() => handleViewEventDetails(query.event_id)}
+                          >
+                            View Event
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </section>
           )}

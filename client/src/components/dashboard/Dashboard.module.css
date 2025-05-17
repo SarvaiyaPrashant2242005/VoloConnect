@@ -543,9 +543,10 @@ button {
   border: 1px solid var(--color-border);
   height: 100%;
   margin-bottom: 20px;
-  padding: 20px;
+  padding: 24px;
   max-width: 100%;
   width: 100%;
+  position: relative;
 }
 
 .eventCard:hover {
@@ -558,7 +559,7 @@ button {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
 }
 
 .eventTitle {
@@ -566,6 +567,7 @@ button {
   font-size: var(--font-size-lg);
   font-weight: var(--font-weight-bold);
   color: var(--color-text-primary);
+  line-height: 1.4;
 }
 
 .eventStatus {
@@ -575,6 +577,8 @@ button {
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-medium);
   text-transform: capitalize;
+  margin-left: 8px;
+  white-space: nowrap;
 }
 
 .statusActive {
@@ -608,7 +612,8 @@ button {
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
-  line-height: 1.4;
+  line-height: 1.5;
+  min-height: 48px;
 }
 
 .eventDetails {
@@ -621,9 +626,10 @@ button {
 .eventDetail {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
   font-size: var(--font-size-md);
   color: var(--color-text-secondary);
+  padding: 4px 0;
 }
 
 .detailIcon {
@@ -651,18 +657,19 @@ button {
 }
 
 .eventProgress {
-  margin-bottom: 20px;
-  height: 6px;
+  margin-bottom: 24px;
+  height: 8px;
   background-color: var(--color-bg-hover);
-  border-radius: 3px;
+  border-radius: 4px;
   overflow: hidden;
   position: relative;
 }
 
 .progressBar {
   height: 100%;
-  border-radius: 3px;
+  border-radius: 4px;
   position: relative;
+  transition: width 0.3s ease;
 }
 
 .progressIndicator {
@@ -677,8 +684,19 @@ button {
 
 .eventActions {
   display: flex;
+  flex-direction: column;
   gap: 12px;
   margin-top: auto;
+}
+
+.actionRow {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.fullWidth {
+  width: 100%;
 }
 
 .actionButton {
@@ -690,6 +708,10 @@ button {
   transition: all 0.2s ease;
   cursor: pointer;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .viewButton {
@@ -716,26 +738,33 @@ button {
   background-color: var(--color-primary);
   color: var(--color-white);
   border: none;
+  font-weight: var(--font-weight-bold);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
 }
 
 .primaryButton:hover {
   background-color: var(--color-primary-dark);
+  box-shadow: 0 4px 6px rgba(37, 99, 235, 0.25);
+  transform: translateY(-1px);
 }
 
 .primaryButton:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
   background-color: var(--color-text-tertiary);
+  box-shadow: none;
+  transform: none;
 }
 
 .secondaryButton {
-  background-color: var(--color-bg-paper);
-  color: var(--color-primary);
-  border-color: var(--color-primary);
+  background-color: transparent;
+  color: #6366f1; /* Indigo color that suits a question/query action */
+  border: 1px solid #6366f1;
 }
 
 .secondaryButton:hover {
-  background-color: var(--color-primary-light);
+  background-color: rgba(99, 102, 241, 0.1); /* Light indigo background on hover */
+  transform: translateY(-1px);
 }
 
 .createEventButton {
@@ -758,12 +787,10 @@ button {
 }
 
 .buttonIcon {
-  font-size: var(--font-size-lg);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1rem;
-  height: 1rem;
+  margin-right: 4px;
 }
 
 .noEvents {
@@ -1213,5 +1240,164 @@ button {
 @media (max-width: 768px) {
   .mobileCloseButton {
     display: block;
+  }
+}
+
+/* My Queries Section */
+.queriesSection {
+  margin-top: 2rem;
+}
+
+.sectionTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: 1.5rem;
+  color: var(--color-text-primary);
+}
+
+.queriesList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.queryCard {
+  background-color: var(--color-bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+  border: 1px solid var(--color-border);
+  transition: all 0.2s ease;
+}
+
+.queryCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary-light);
+}
+
+.queryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.queryEventTitle {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+}
+
+.queryStatus {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-medium);
+  text-transform: capitalize;
+}
+
+.statusAnswered {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.statusPending {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.queryContent {
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background-color: var(--color-bg-hover);
+  border-radius: var(--radius-md);
+}
+
+.queryMessage, 
+.queryResponse {
+  margin: 0 0 1rem;
+  font-size: var(--font-size-md);
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+}
+
+.queryResponse {
+  margin-bottom: 0;
+}
+
+.queryLabel, 
+.responseLabel {
+  display: block;
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.pendingResponse {
+  color: var(--color-warning);
+  font-style: italic;
+  margin: 0;
+}
+
+.queryFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.queryDate {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+}
+
+.viewEventButton {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  padding: 0.5rem 1rem;
+  font-size: var(--font-size-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.viewEventButton:hover {
+  background-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.noQueries {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary);
+  background-color: var(--color-bg-hover);
+  border-radius: var(--radius-lg);
+  border: 1px dashed var(--color-border);
+}
+
+.noQueriesSubtext {
+  margin-top: 0.5rem;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-tertiary);
+}
+
+@media (max-width: 768px) {
+  .queryHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .queryFooter {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .viewEventButton {
+    width: 100%;
   }
 }

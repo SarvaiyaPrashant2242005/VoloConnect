@@ -43,6 +43,7 @@ import {
 } from '@mui/icons-material';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../../config/api';
+import '../../styles/Print.css';
 
 // For CSV export
 const downloadCSV = (data, filename) => {
@@ -132,13 +133,18 @@ const VolunteerManagement = () => {
     try {
       setLoading(true);
       
+      console.log('Fetching data for event ID:', eventId);
+      console.log('Current user ID:', sessionStorage.getItem('userId'));
+      
       // Fetch event details
       const eventResponse = await api.get(`/api/events/${eventId}`);
       if (eventResponse.data) {
         setEvent(eventResponse.data.data || eventResponse.data);
+        console.log('Event details loaded:', eventResponse.data);
       }
       
-      // Fetch volunteers for this event
+      // Use the correct API endpoint to fetch volunteers
+      console.log('Attempting to fetch volunteers with endpoint:', `/api/events/${eventId}/volunteers`);
       const volunteersResponse = await api.get(`/api/events/${eventId}/volunteers`);
       
       console.log('Volunteers API response:', volunteersResponse.data);
@@ -450,6 +456,36 @@ const VolunteerManagement = () => {
     }
   };
 
+  const handlePrint = () => {
+    // Apply custom print styles
+    const originalTitle = document.title;
+    const eventTitle = event ? event.title : 'Event';
+    document.title = `Volunteer List - ${eventTitle}`;
+    
+    // Set print classes on body
+    document.body.classList.add('printing-volunteers');
+    
+    // Apply custom formatting for print
+    const statusChips = document.querySelectorAll('.MuiChip-root');
+    statusChips.forEach(chip => {
+      // Get the status text and sanitize it for use as a class name
+      const statusText = chip.textContent.toLowerCase();
+      const sanitizedStatus = statusText.replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+      
+      // Only add the class if it's a valid class name
+      if (sanitizedStatus) {
+        chip.classList.add(`status-${sanitizedStatus}`);
+      }
+    });
+    
+    // Print the document
+    window.print();
+    
+    // Restore original settings
+    document.title = originalTitle;
+    document.body.classList.remove('printing-volunteers');
+  };
+
   if (loading && !event) {
     return (
       <Container sx={{ py: 4 }}>
@@ -491,6 +527,13 @@ const VolunteerManagement = () => {
         )}
       </Box>
 
+      {/* Print-only Header */}
+      <div className="print-only print-header">
+        <h1>Volunteer List</h1>
+        {event && <h2>{event.title}</h2>}
+        <p>Generated on {new Date().toLocaleDateString()} at {new Date().toLocaleTimeString()}</p>
+      </div>
+
       {/* Stats Section */}
       <Paper
         elevation={3}
@@ -500,6 +543,7 @@ const VolunteerManagement = () => {
           bgcolor: 'background.paper',
           borderRadius: 2
         }}
+        className="stats-section"
       >
         <Grid container spacing={3}>
           <Grid item xs={12} sm={6} md={3}>
@@ -544,6 +588,7 @@ const VolunteerManagement = () => {
           bgcolor: 'background.paper',
           borderRadius: 2
         }}
+        className="filters-section no-print"
       >
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center' }}>
           <TextField
@@ -592,7 +637,7 @@ const VolunteerManagement = () => {
           )}
           
           <Tooltip title="Print Volunteer List">
-            <IconButton onClick={() => window.print()}>
+            <IconButton onClick={handlePrint}>
               <PrintIcon />
             </IconButton>
           </Tooltip>
@@ -612,6 +657,7 @@ const VolunteerManagement = () => {
           value={tabValue}
           onChange={handleTabChange}
           variant="fullWidth"
+          className="no-print"
         >
           <Tab label="All Volunteers" />
           <Tab 
@@ -664,7 +710,7 @@ const VolunteerManagement = () => {
                 <TableCell>Skills</TableCell>
                 <TableCell>Hours</TableCell>
                 <TableCell>Status</TableCell>
-                <TableCell>Actions</TableCell>
+                <TableCell className="no-print">Actions</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -704,9 +750,10 @@ const VolunteerManagement = () => {
                       <Chip
                         label={volunteer.status || 'pending'}
                         color={getStatusChipColor(volunteer.status || 'pending')}
+                        className={`status-chip status-${volunteer.status}`}
                       />
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="no-print">
                       <Box sx={{ display: 'flex', gap: 1 }}>
                         {volunteer.status === 'pending' && (
                           <>
@@ -764,6 +811,7 @@ const VolunteerManagement = () => {
                         color="primary"
                         onClick={handleCreateTestVolunteers}
                         sx={{ mt: 2 }}
+                        className="no-print"
                       >
                         Add Test Volunteers
                       </Button>

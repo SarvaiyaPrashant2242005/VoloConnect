@@ -276,4 +276,1043 @@
 
 .createNewEventButton:hover {
   background-color: #45a049;
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.logo span:first-child {
+  color: #333;
+}
+
+.logo span:last-child {
+  color: #2196F3;
+}
+
+/* Add keyframes for animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-5px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+/* Dashboard container animation */
+.dashboardContainer {
+  animation: fadeIn 0.5s ease-out;
+}
+
+/* Sidebar animations */
+.sidebar {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+.sidebarHeader {
+  animation: fadeIn 0.5s ease-out 0.2s backwards;
+}
+
+.navItem {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.navItem:hover {
+  background-position: 0 0;
+  transform: translateX(5px);
+}
+
+.navItem.active {
+  background: rgba(33, 150, 243, 0.1);
+  transform: translateX(5px);
+}
+
+/* Main content animations */
+.mainContent {
+  animation: slideInRight 0.5s ease-out;
+}
+
+.header {
+  animation: fadeIn 0.5s ease-out 0.3s backwards;
+}
+
+/* Stats grid animations */
+.statsGrid {
+  animation: fadeIn 0.5s ease-out 0.4s backwards;
+}
+
+.statCard {
+  transition: all 0.3s ease;
+  animation: scaleIn 0.5s ease-out backwards;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.statCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.statCard:hover::before {
+  transform: translateX(100%);
+}
+
+.statIcon {
+  transition: all 0.4s ease;
+}
+
+.statCard:hover .statIcon {
+  transform: scale(1.2) rotate(5deg);
+  animation: float 2s ease-in-out infinite;
+}
+
+.statCard:nth-child(1) { animation-delay: 0.1s; }
+.statCard:nth-child(2) { animation-delay: 0.2s; }
+.statCard:nth-child(3) { animation-delay: 0.3s; }
+.statCard:nth-child(4) { animation-delay: 0.4s; }
+
+/* Event card animations */
+.eventCard {
+  transition: all 0.3s ease;
+  animation: scaleIn 0.5s ease-out backwards;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.eventCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.eventCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.eventCard:hover::after {
+  transform: translateX(100%);
+}
+
+.eventHeader {
+  animation: fadeIn 0.5s ease-out;
+  transition: all 0.3s ease;
+}
+
+.eventCard:hover .eventHeader {
+  transform: translateY(-2px);
+}
+
+.eventStatus {
+  transition: all 0.3s ease;
+}
+
+.eventCard:hover .eventStatus {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.eventDescription {
+  animation: fadeIn 0.5s ease-out 0.1s backwards;
+}
+
+.eventDetails {
+  animation: fadeIn 0.5s ease-out 0.2s backwards;
+}
+
+.eventActions {
+  animation: fadeIn 0.5s ease-out 0.3s backwards;
+}
+
+/* Progress bar animation */
+.progressBar {
+  position: relative;
+  overflow: hidden;
+}
+
+.progressBar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: progressShine 2s infinite;
+}
+
+@keyframes progressShine {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Button animations */
+.actionButton {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.actionButton:hover {
+  background-position: 0 0;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.actionButton::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.actionButton:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Search bar animation */
+.searchBar {
+  animation: fadeIn 0.5s ease-out 0.4s backwards;
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.searchBar input {
+  transition: all 0.3s ease;
+  background: linear-gradient(90deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.searchBar input:focus {
+  transform: scale(1.02);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+}
+
+.searchBar .searchIcon {
+  transition: all 0.3s ease;
+}
+
+.searchBar:hover .searchIcon {
+  transform: scale(1.2) rotate(5deg);
+  animation: pulse 2s infinite;
+}
+
+/* User menu animation */
+.userMenu {
+  animation: fadeIn 0.5s ease-out 0.5s backwards;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.05), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.userMenu:hover {
+  background-position: 0 0;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: float 3s ease-in-out infinite;
+}
+
+.avatar:hover {
+  transform: scale(1.15) rotate(8deg);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Loading animation */
+.loader {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Mobile menu animations */
+.mobileMenuButton {
+  animation: fadeIn 0.5s ease-out;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.05), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.mobileMenuButton:hover {
+  background-position: 0 0;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.mobileOverlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Profile section animations */
+.profileCard {
+  animation: scaleIn 0.5s ease-out;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.profileCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.profileHeader {
+  animation: fadeIn 0.5s ease-out 0.2s backwards;
+}
+
+.profileDetails {
+  animation: fadeIn 0.5s ease-out 0.4s backwards;
+}
+
+.skillTag {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, #e9ecef 0%, #f8f9fa 100%);
+}
+
+.skillTag:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(90deg, #e9ecef 0%, #ffffff 100%);
+}
+
+/* Scroll reveal animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Responsive animations */
+@media (max-width: 768px) {
+  .sidebar {
+    animation: slideInLeft 0.3s ease-out;
+  }
+  
+  .mainContent {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .eventCard {
+    animation: fadeIn 0.3s ease-out;
+  }
+}
+
+/* Additional keyframes for new animations */
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.1);
+  }
+  80% {
+    opacity: 1;
+    transform: scale(0.89);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideInUp {
+  from {
+    transform: translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+/* Enhanced logo animation */
+.logo {
+  animation: bounceIn 0.8s ease-out;
+}
+
+.logo span:first-child {
+  animation: slideInLeft 0.5s ease-out;
+}
+
+.logo span:last-child {
+  animation: slideInRight 0.5s ease-out;
+}
+
+/* Enhanced nav items */
+.navItem::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background: #2196F3;
+  transform: scaleX(0);
+  transform-origin: right;
+  transition: transform 0.3s ease;
+}
+
+.navItem:hover::after {
+  transform: scaleX(1);
+  transform-origin: left;
+}
+
+.navItem.active {
+  animation: pulse 0.5s ease-out;
+}
+
+/* Enhanced stat cards */
+.statCard {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.statCard:hover::before {
+  transform: translateX(100%);
+}
+
+.statCard:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced event cards */
+.eventCard {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.eventCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.eventCard:hover::after {
+  transform: translateX(100%);
+}
+
+.eventCard:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced buttons */
+.actionButton {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.actionButton::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.actionButton:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+.actionButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced search bar */
+.searchBar {
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.searchBar input:focus {
+  transform: scale(1.02);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.searchBar .searchIcon {
+  animation: pulse 2s infinite;
+}
+
+/* Enhanced user menu */
+.userMenu {
+  transition: all 0.3s ease;
+}
+
+.userMenu:hover {
+  transform: translateY(-2px);
+}
+
+.avatar {
+  transition: all 0.3s ease;
+  animation: float 3s ease-in-out infinite;
+}
+
+.avatar:hover {
+  transform: scale(1.1);
+}
+
+/* Loading animation */
+.loader {
+  position: relative;
+  animation: spin 1s linear infinite;
+}
+
+.loader::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: shimmer 2s infinite;
+}
+
+/* Mobile menu animations */
+.mobileMenuButton {
+  animation: fadeIn 0.5s ease-out;
+}
+
+.mobileOverlay {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Profile section animations */
+.profileCard {
+  animation: scaleIn 0.5s ease-out;
+}
+
+.profileHeader {
+  animation: fadeIn 0.5s ease-out 0.2s backwards;
+}
+
+.profileDetails {
+  animation: fadeIn 0.5s ease-out 0.4s backwards;
+}
+
+.skillTag {
+  transition: all 0.3s ease;
+  animation: scaleIn 0.3s ease-out backwards;
+}
+
+.skillTag:hover {
+  transform: translateY(-2px);
+}
+
+/* Scroll reveal animation */
+.reveal {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.8s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Staggered animation delays for grid items */
+.statsGrid .statCard:nth-child(1) { animation-delay: 0.1s; }
+.statsGrid .statCard:nth-child(2) { animation-delay: 0.2s; }
+.statsGrid .statCard:nth-child(3) { animation-delay: 0.3s; }
+.statsGrid .statCard:nth-child(4) { animation-delay: 0.4s; }
+
+.eventsGrid .eventCard:nth-child(1) { animation-delay: 0.1s; }
+.eventsGrid .eventCard:nth-child(2) { animation-delay: 0.2s; }
+.eventsGrid .eventCard:nth-child(3) { animation-delay: 0.3s; }
+.eventsGrid .eventCard:nth-child(4) { animation-delay: 0.4s; }
+.eventsGrid .eventCard:nth-child(5) { animation-delay: 0.5s; }
+.eventsGrid .eventCard:nth-child(6) { animation-delay: 0.6s; }
+
+/* Responsive animations */
+@media (max-width: 768px) {
+  .sidebar {
+    animation: slideInLeft 0.3s ease-out;
+  }
+  
+  .mainContent {
+    animation: fadeIn 0.3s ease-out;
+  }
+  
+  .eventCard {
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  .statCard:hover {
+    transform: translateY(-3px);
+  }
+
+  .eventCard:hover {
+    transform: translateY(-3px);
+  }
+}
+
+/* Enhanced interactive hover effects */
+.navItem {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.navItem:hover {
+  background-position: 0 0;
+  transform: translateX(5px);
+}
+
+.navItem.active {
+  background: rgba(33, 150, 243, 0.1);
+  transform: translateX(5px);
+}
+
+/* Enhanced stat card hover effects */
+.statCard {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.statCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.statCard::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.statCard:hover::before {
+  transform: translateX(100%);
+}
+
+.statIcon {
+  transition: all 0.4s ease;
+}
+
+.statCard:hover .statIcon {
+  transform: scale(1.2) rotate(5deg);
+  animation: float 2s ease-in-out infinite;
+}
+
+/* Enhanced event card hover effects */
+.eventCard {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.eventCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.eventCard::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(45deg, transparent, rgba(33, 150, 243, 0.1), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+
+.eventCard:hover::after {
+  transform: translateX(100%);
+}
+
+.eventHeader {
+  transition: all 0.3s ease;
+}
+
+.eventCard:hover .eventHeader {
+  transform: translateY(-2px);
+}
+
+.eventStatus {
+  transition: all 0.3s ease;
+}
+
+.eventCard:hover .eventStatus {
+  transform: scale(1.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced button hover effects */
+.actionButton {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.actionButton:hover {
+  background-position: 0 0;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.actionButton::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  transition: width 0.6s ease, height 0.6s ease;
+}
+
+.actionButton:hover::before {
+  width: 300px;
+  height: 300px;
+}
+
+/* Enhanced search bar hover effects */
+.searchBar {
+  position: relative;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.searchBar input {
+  transition: all 0.3s ease;
+  background: linear-gradient(90deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.searchBar input:focus {
+  transform: scale(1.02);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+  background: #ffffff;
+}
+
+.searchBar .searchIcon {
+  transition: all 0.3s ease;
+}
+
+.searchBar:hover .searchIcon {
+  transform: scale(1.2) rotate(5deg);
+  animation: pulse 2s infinite;
+}
+
+/* Enhanced user menu hover effects */
+.userMenu {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.05), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.userMenu:hover {
+  background-position: 0 0;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+.avatar {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: float 3s ease-in-out infinite;
+}
+
+.avatar:hover {
+  transform: scale(1.15) rotate(8deg);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Enhanced profile section hover effects */
+.profileCard {
+  position: relative;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+}
+
+.profileCard:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+}
+
+.profileAvatar {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: float 3s ease-in-out infinite;
+}
+
+.profileAvatar:hover {
+  transform: scale(1.15) rotate(8deg);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.skillTag {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, #e9ecef 0%, #f8f9fa 100%);
+}
+
+.skillTag:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background: linear-gradient(90deg, #e9ecef 0%, #ffffff 100%);
+}
+
+/* Enhanced filter buttons hover effects */
+.filterButton {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.05), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.filterButton:hover {
+  background-position: 0 0;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filterButton.active {
+  background: rgba(33, 150, 243, 0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced mobile menu button hover effects */
+.mobileMenuButton {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.05), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.mobileMenuButton:hover {
+  background-position: 0 0;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced refresh button hover effects */
+.refreshButton {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, transparent, rgba(33, 150, 243, 0.05), transparent);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.refreshButton:hover {
+  background-position: 0 0;
+  transform: translateY(-2px) rotate(180deg);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Enhanced create event button hover effects */
+.createEventButton {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(90deg, #2196F3 0%, #1976D2 100%);
+  background-size: 200% 100%;
+  background-position: 100% 0;
+}
+
+.createEventButton:hover {
+  background-position: 0 0;
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(33, 150, 243, 0.2);
+}
+
+.dashboardPage {
+    min-height: 100vh;
+    width: 100%;
+    position: relative;
+    background: linear-gradient(135deg, rgba(33, 150, 243, 0.05) 0%, rgba(0, 0, 0, 0.05) 100%);
+}
+
+.dashboardPage::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%232196F3' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+    opacity: 0.5;
+    animation: backgroundMove 20s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes backgroundMove {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 100px 100px;
+    }
 }   

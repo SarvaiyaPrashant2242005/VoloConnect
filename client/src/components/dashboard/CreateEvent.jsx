@@ -179,7 +179,7 @@ const CreateEvent = () => {
           
           // Navigate after a short delay to allow the user to see the success message
           setTimeout(() => {
-            navigate('/dashboard/events');
+            navigate('/dashboard');
           }, 1500);
         }
       } catch (error) {
