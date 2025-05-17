@@ -1,5 +1,4 @@
 const express = require('express');
-const cors = require('cors');
 const volunteerRoutes = require('./routes/volunteers');
 const eventRoutes = require('./routes/events');
 const eventManagementRoutes = require('./routes/event_management');
@@ -10,7 +9,6 @@ const authRoutes = require('./routes/auth');
 
 const app = express();
 
-app.use(cors());
 app.use(express.json());
 
 // API routes
@@ -46,9 +44,4 @@ app.use((err, req, res, next) => {
   });
 });
 
-const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-});
-
-module.exports = app; 
+module.exports = app;

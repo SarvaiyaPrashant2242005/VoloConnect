@@ -1,22 +1,11 @@
-// index.js
 const express = require('express');
-const app = express();
-const authRoutes = require('./routes/auth');
-const eventsRoutes = require('./routes/events');
-const volunteerRoutes = require('./routes/volunteers');
-const emailRoutes = require('./routes/email');
-const queriesRoutes = require('./routes/queries');
-
 const cors = require('cors');
+const app = require('./app');
 require('dotenv').config();
 
-// Middleware
-app.use(express.json());
-
-// CORS configuration
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-production-domain.com'] 
+    ? ['https://voloconnect-client.onrender.com'] 
     : ['http://localhost:5173', 'http://127.0.0.1:5173', 'http://localhost:3001'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'user-id'],
@@ -26,25 +15,7 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Routes
-app.use('/api/volunteers', volunteerRoutes);
-app.use('/api/events', eventsRoutes);
-app.use('/api/auth', authRoutes);
-app.use('/api/email', emailRoutes);
-app.use('/api/queries', queriesRoutes);
-
-
-// Error handling middleware
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({
-    success: false,
-    message: 'Something went wrong!',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
-  });
-});
-
 const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log(Server is running on port ${PORT});
 });
